@@ -48,7 +48,7 @@ public:
     float Rad = 500;		//Cloud raduis parameter
     float Vel = 0.1;		//Cloud points velocity parameter
     int bandRad = 1;		//Band index in spectrum, affecting Rad value
-    int bandVel = 100;		//Band index in spectrum, affecting Vel value
+    int bandVel = 6;		//Band index in spectrum, affecting Vel value
     const int n = 500;		//Number of cloud points
     std::vector<float> tx, ty;		//Offsets for Perlin noise calculation for points
     std::vector<ofPoint> p;			//Cloud's points positions

@@ -7,7 +7,7 @@ void ofApp::setup() {
     ofSetCircleResolution(80);
     ofBackground(54, 54, 54);
 
-    int bufferSize = N*2;
+    int bufferSize = N*2; // 512
 
     fft = ofxFft::create(bufferSize, OF_FFT_WINDOW_BARTLETT);
     audioInput = new float[bufferSize];
@@ -143,7 +143,9 @@ void ofApp::draw() {
             ofDrawRectangle(10 + i * 5, 700, 3, -spectrum[i] * 100);
         }
 
-        ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 10, 200);
+        ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
+        ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 20);
+        ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", sampleSize: " + ofToString(fft->getSignalSize()), 10, 30);
     }
 
     //Draw cloud
