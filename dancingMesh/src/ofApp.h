@@ -1,6 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxFft.h"
+
+#define BUFFER_SIZE 512
+#define SR 44100
 
 class ofApp : public ofBaseApp {
 
@@ -21,9 +25,23 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
+    void audioIn(ofSoundBuffer& input);
+
+    ofxFft* fft;
+    float* audioInput;
+    float* fftOutput;
+
     void analyseFFT();
 
-    ofSoundPlayer sound;	//Sound samplevoidkeyPressed(int key);
+    ofSoundStream soundStream;
+
+    int	sampleRate;
+    int bufferSize;
+    int inChan;
+    int outChan;
+
+    int volumeMultiplier = 4;
+
     bool play;
     const int N = 256;		//Number of bands in spectrum
     std::vector<float> spectrum;      //Smoothed spectrum values
