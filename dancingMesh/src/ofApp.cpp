@@ -91,8 +91,8 @@ void ofApp::update() {
 void ofApp::analyseFFT() {
 
     //Calculate color based on range
-    std::vector<float>::iterator rg_it = std::next(spectrum.begin(), 10);
-    std::vector<float>::iterator gb_it = std::next(spectrum.begin(), 100);
+    std::vector<float>::iterator rg_it = std::next(spectrum.begin(), 3);
+    std::vector<float>::iterator gb_it = std::next(spectrum.begin(), 20);
 
     bass = std::accumulate(spectrum.begin(), rg_it, 0.0f);
     mids = std::accumulate(rg_it, gb_it, 0.0f);
@@ -197,16 +197,20 @@ void ofApp::keyPressed(int key) {
         ofToggleFullscreen();
         break;
     case 'w':
-        bandRad++;
+        if (bandRad < N)
+            bandRad++;
         break;
     case 'q':
-        bandRad--;
+        if (bandRad > 0)
+            bandRad--;
         break;
     case 's':
-        bandVel++;
+        if (bandVel < N)
+            bandVel++;
         break;
     case 'a':
-        bandVel--;
+        if (bandVel > 0)
+            bandVel--;
         break;
     default:
         break;

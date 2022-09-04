@@ -44,7 +44,7 @@ public:
     int volumeMultiplier = 4;
 
     bool play;
-    const int N = 128;		//Number of bands in spectrum
+    const int N = 32;		//Number of bands in spectrum
     std::vector<float> spectrum, soundSpectrum;      //Smoothed spectrum values
     float Rad = 500;		//Cloud raduis parameter
     float Vel = 0.1;		//Cloud points velocity parameter
