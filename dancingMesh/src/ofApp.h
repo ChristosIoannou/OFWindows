@@ -30,6 +30,7 @@ public:
     ofxFft* fft;
     float* audioInput;
     float* fftOutput;
+    std::mutex soundMutex;
 
     void analyseFFT();
 
@@ -43,8 +44,8 @@ public:
     int volumeMultiplier = 4;
 
     bool play;
-    const int N = 256;		//Number of bands in spectrum
-    std::vector<float> spectrum;      //Smoothed spectrum values
+    const int N = 32;		//Number of bands in spectrum
+    std::vector<float> spectrum, soundSpectrum;      //Smoothed spectrum values
     float Rad = 500;		//Cloud raduis parameter
     float Vel = 0.1;		//Cloud points velocity parameter
     int bandRad = 1;		//Band index in spectrum, affecting Rad value
