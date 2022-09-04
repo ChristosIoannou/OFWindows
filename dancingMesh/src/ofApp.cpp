@@ -1,7 +1,5 @@
 #include "ofApp.h"
 
-//#define OFX_FFT_USE_FFTW
-
 //--------------------------------------------------------------
 void ofApp::setup() {
 
@@ -57,9 +55,9 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-    //soundMutex.lock();
+    soundMutex.lock();
     spectrum = soundSpectrum;
-    //soundMutex.unlock();
+    soundMutex.unlock();
 
     //Update particles using spectrum values
     //Computing dt as a time between the last
@@ -141,6 +139,7 @@ void ofApp::draw() {
         ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
         ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 20);
         ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", sampleSize: " + ofToString(fft->getSignalSize()), 10, 30);
+        ofDrawBitmapString("spectrum    | numofbins: " + ofToString(spectrum.size()) + ", N: " + ofToString(N), 10, 40);
     }
 
     //Draw cloud
@@ -232,12 +231,12 @@ void ofApp::audioIn(ofSoundBuffer& input) {
     ////Update our smoothed spectrum,
     ////by slowly decreasing its values and getting maximum with val
     ////So we will have slowly falling peaks in spectrum
-    //soundMutex.lock();
+    soundMutex.lock();
     for (int i = 0; i < N; i++) {
         soundSpectrum[i] *= 0.99;	//Slow decreasing
         soundSpectrum[i] = max(soundSpectrum[i], fftOutput[i]);
     }
-    //soundMutex.unlock();
+    soundMutex.unlock();
 
 }
 
