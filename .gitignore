@@ -65,6 +65,9 @@ ipch/
 *.vcxproj.filters
 *.vcxproj.user
 *.sln
+*.db-shm
+*.db-wal
+*.opendb
 
 # Eclipse
 .metadata
