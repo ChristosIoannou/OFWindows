@@ -29,16 +29,19 @@ public:
     void setupSoundStream();
     void setupFFT();
     void setupDancingMesh();
+    void setupTetrahedron();
 
     //--- updates ---
     void updateFFTandAnalyse();
     void updateDancingMesh(float dt);
+    void updateTetrahedron(float dt);
 
     //--- draw ---
     void drawInfo();
     void drawDancingMesh();
     void drawDancingMeshPoints();
     void drawDancingMeshLines();
+    void drawTetrahedron();
 
     void audioIn(ofSoundBuffer& input);
 
@@ -71,11 +74,21 @@ public:
     int bandRad = 1;		//Band index in spectrum, affecting Rad value
     int bandVel = 6;		//Band index in spectrum, affecting Vel value
     
+    //--- tetrahedron ---
+    ofMesh tetrahedron;
+    std::vector<ofVec3f> tetTargetPoints;
+    std::vector<ofVec3f> tetOldPoints;
+    bool beat;
+
     //--- time ---
     float time0 = 0;		//Time value, used for dt computing
     
+    //--- production ---
+    ofEasyCam cam;
+
     //--- key booleans ---
-    bool showInfo = false;
-    bool dancingMesh = false;
+    bool b_Info = false;
+    bool b_dancingMesh = false;
+    bool b_tetrahedron = true;
 
 };

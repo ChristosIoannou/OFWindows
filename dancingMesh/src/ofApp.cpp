@@ -8,12 +8,11 @@ void ofApp::setup() {
     ofBackground(54, 54, 54);
     ofSetFrameRate(-1);
 
-    // N = 32
-    // bufferSize = 128
+    // N = 32, bufferSize = 128
     setupSoundStream();
     setupFFT();
     setupDancingMesh();
-
+    setupTetrahedron();
 }
 
 //--------------------------------------------------------------
@@ -30,6 +29,7 @@ void ofApp::update() {
     time0 = time; //Store the current time
 
     updateDancingMesh(dt);
+    updateTetrahedron(dt);
 
 }
 
@@ -38,27 +38,40 @@ void ofApp::draw() {
     ofBackground(ofColor::black);	//Set up the background
     ofEnableAlphaBlending();
 
-
-    if (showInfo) {
+    if (b_Info) {
         drawInfo();
     }
 
-    if (dancingMesh) {
+    ofPushMatrix();         // Move center of coordinate system to the screen center
+    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+
+    if (b_dancingMesh) {
         drawDancingMesh();
     }
 
+    if (b_tetrahedron) {
+        drawTetrahedron();
+    }
+
+    ofPopMatrix();          // Restore coordinate system
 }
 
-
+void ofApp::drawTetrahedron() {
+    ofNoFill();
+    tetrahedron.drawWireframe();
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (key) {
     case 'g':
-        showInfo = !showInfo;
+        b_Info = !b_Info;
         break;
     case 'd':
-        dancingMesh = !dancingMesh;
+        b_dancingMesh = !b_dancingMesh;
+        break;
+    case 't':
+        b_tetrahedron = !b_tetrahedron;
         break;
     case '=':
         volumeMultiplier++;
@@ -132,7 +145,7 @@ void ofApp::mouseDragged(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-
+    beat = true;
 }
 
 //--------------------------------------------------------------
@@ -212,6 +225,24 @@ void ofApp::setupDancingMesh() {
 }
 
 //--------------------------------------------------------------
+void ofApp::setupTetrahedron() {
+
+    tetTargetPoints.resize(4);
+    tetOldPoints.resize(4);
+
+    for (int a = 0; a < 4; ++a) {
+        ofVec3f temp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
+        ofVec3f targettemp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
+        tetrahedron.addVertex(temp);
+        tetTargetPoints[a] = targettemp;
+        for (int b = a + 1; b < 5; ++b) {
+            tetrahedron.addIndex(a);
+            tetrahedron.addIndex(b % 4);
+        }
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
     soundMutex.lock();
     spectrum = soundSpectrum;
@@ -239,6 +270,27 @@ void ofApp::updateDancingMesh(float dt) {
 }
 
 //--------------------------------------------------------------
+void ofApp::updateTetrahedron(float dt) {
+    if (beat) {
+        for (int i = 0; i < 4; ++i) {
+            tetOldPoints[i] = tetrahedron.getVertex(i);
+            ofVec3f temp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
+            tetTargetPoints[i] = temp;
+        }
+        beat = false;
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        //tetDirectionVector[i] = tetTargetPoints[i] - tetrahedron.getVertex(i);
+        ofVec3f moveDirection = tetTargetPoints[i] - tetOldPoints[i];
+        moveDirection.normalize();
+        moveDirection *= 1000;
+        ofVec3f newPosition = tetrahedron.getVertex(i) + moveDirection * dt;
+        tetrahedron.setVertex(i, newPosition);
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::analyseFFT() {
 
     //Calculate color based on range
@@ -259,11 +311,8 @@ void ofApp::analyseFFT() {
 //--------------------------------------------------------------
 void ofApp::drawDancingMesh() {
     ofDisableDepthTest();
-    ofPushMatrix();         // Move center of coordinate system to the screen center
-    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     drawDancingMeshPoints();
     drawDancingMeshLines();
-    ofPopMatrix();          // Restore coordinate system
     ofEnableDepthTest();
 }
 
