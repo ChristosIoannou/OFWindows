@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxFft.h"
+#include "ofxBeat.h"
 
 //#define BUFFER_SIZE 512
 //#define SR 44100
@@ -53,7 +54,6 @@ public:
     float* fftOutput;
     const int N = 32;		//Number of bands in spectrum
     std::vector<float> spectrum, soundSpectrum;      //Smoothed spectrum values
-    int volumeMultiplier = 4;
     float bass, mids, highs, totals;
     int red, green, blue;
     float brightness;
@@ -75,9 +75,12 @@ public:
     int bandVel = 6;		//Band index in spectrum, affecting Vel value
     
     //--- tetrahedron ---
+    bool passedTarget();
     ofMesh tetrahedron;
     std::vector<ofVec3f> tetTargetPoints;
     std::vector<ofVec3f> tetOldPoints;
+    float tetRadius = 300.0;
+    int moveVelocity = 500;
     bool beat;
 
     //--- time ---
@@ -86,9 +89,15 @@ public:
     //--- production ---
     ofEasyCam cam;
 
+    //--- inputs ---
+    int volumeMultiplier = 4;
+    int beatSensitivity = 11;
+
     //--- key booleans ---
     bool b_Info = false;
     bool b_dancingMesh = false;
     bool b_tetrahedron = true;
 
+    
+    ofxBeat beatDetector;
 };

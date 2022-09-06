@@ -1,2 +1,3 @@
+ofxBeat
 ofxFft
 ofxGui

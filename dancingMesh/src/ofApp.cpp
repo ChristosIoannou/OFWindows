@@ -19,6 +19,7 @@ void ofApp::setup() {
 void ofApp::update() {
 
     updateFFTandAnalyse();
+    beatDetector.update(ofGetElapsedTimeMillis());
 
     //Update particles using spectrum values
     //Computing dt as a time between the last
@@ -29,6 +30,11 @@ void ofApp::update() {
     time0 = time; //Store the current time
 
     updateDancingMesh(dt);
+
+    //float kick = beatDetector.kick();
+    if (beatDetector.isKick(beatSensitivity / 10.0f)) {
+        beat = true;
+    }
     updateTetrahedron(dt);
 
 }
@@ -58,7 +64,7 @@ void ofApp::draw() {
 
 void ofApp::drawTetrahedron() {
     ofNoFill();
-    tetrahedron.drawWireframe();
+    tetrahedron.draw();
 }
 
 //--------------------------------------------------------------
@@ -79,6 +85,12 @@ void ofApp::keyPressed(int key) {
     case '-':
         volumeMultiplier--;
         break;
+    case '0':
+        beatSensitivity++;
+        break;
+    case '9':
+        beatSensitivity--;
+        break;
     case 'f':
         ofToggleFullscreen();
         break;
@@ -98,6 +110,10 @@ void ofApp::keyPressed(int key) {
         if (bandVel > 0)
             bandVel--;
         break;
+    case 'r':
+        beatDetector.disableBeatDetect();
+        beatDetector.enableBeatDetect();
+        break;
     default:
         break;
     }
@@ -111,7 +127,7 @@ void ofApp::audioIn(ofSoundBuffer& input) {
     memcpy(fftOutput, fft->getAmplitude(), sizeof(float) * N);
 
     for (int i = 0; i < N; i++) {
-        fftOutput[i] = fftOutput[i] * (volumeMultiplier / 4);
+        fftOutput[i] = fftOutput[i] * (volumeMultiplier / 4.0f);
     }
 
     ////We should not release memory of val,
@@ -125,6 +141,8 @@ void ofApp::audioIn(ofSoundBuffer& input) {
         soundSpectrum[i] = max(soundSpectrum[i], fftOutput[i]);
     }
     soundMutex.unlock();
+
+    beatDetector.audioReceived(audioInput, bufferSize, inChan);
 
 }
 
@@ -227,13 +245,21 @@ void ofApp::setupDancingMesh() {
 //--------------------------------------------------------------
 void ofApp::setupTetrahedron() {
 
+    tetrahedron.setMode(OF_PRIMITIVE_LINES);
+    tetrahedron.enableColors();
     tetTargetPoints.resize(4);
     tetOldPoints.resize(4);
 
     for (int a = 0; a < 4; ++a) {
-        ofVec3f temp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
-        ofVec3f targettemp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
+        ofVec3f temp(ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius));
+        ofVec3f targettemp(ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius));
+        ofFloatColor drawColor;
+        float h = 158.0 / 255.0;
+        float s = 240.0 / 255.0;
+        float b = 128.0 / 255.0;
+        drawColor.setHex(0x51DCAA, 1.0f); //158,63,86
         tetrahedron.addVertex(temp);
+        tetrahedron.addColor(drawColor);
         tetTargetPoints[a] = targettemp;
         for (int b = a + 1; b < 5; ++b) {
             tetrahedron.addIndex(a);
@@ -274,20 +300,30 @@ void ofApp::updateTetrahedron(float dt) {
     if (beat) {
         for (int i = 0; i < 4; ++i) {
             tetOldPoints[i] = tetrahedron.getVertex(i);
-            ofVec3f temp(ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0), ofRandom(-100.0, 100.0));
+            ofVec3f temp(ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius), ofRandom(-tetRadius, tetRadius));
             tetTargetPoints[i] = temp;
         }
         beat = false;
     }
 
     for (int i = 0; i < 4; ++i) {
-        //tetDirectionVector[i] = tetTargetPoints[i] - tetrahedron.getVertex(i);
         ofVec3f moveDirection = tetTargetPoints[i] - tetOldPoints[i];
         moveDirection.normalize();
-        moveDirection *= 1000;
+        moveDirection *= moveVelocity;
         ofVec3f newPosition = tetrahedron.getVertex(i) + moveDirection * dt;
         tetrahedron.setVertex(i, newPosition);
     }
+
+    //beat = passedTarget();
+}
+
+//--------------------------------------------------------------
+bool ofApp::passedTarget() {
+    ofVec3f moveDirection = tetTargetPoints[0] - tetOldPoints[0];
+    if (moveDirection.dot((tetTargetPoints[0] - tetrahedron.getVertex(0))) < 0)
+        return true;
+    else
+        return false;
 }
 
 //--------------------------------------------------------------
@@ -371,8 +407,9 @@ void ofApp::drawInfo() {
     }
 
     ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
-    ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 20);
-    ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", sampleSize: " + ofToString(fft->getSignalSize()), 10, 30);
-    ofDrawBitmapString("spectrum    | numofbins: " + ofToString(spectrum.size()) + ", N: " + ofToString(N), 10, 40);
+    ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 22);
+    ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier/4.0f), 10, 34);
+    ofDrawBitmapString("spectrum    | band[0] " + ofToString(spectrum[0]) + ", band[1]: " + ofToString(spectrum[1]), 10, 46);
+    ofDrawBitmapString("beat        | beat: " + ofToString(beatDetector.isKick()) + ", snare: " + ofToString(beatDetector.isSnare()) + ", hihat: " + ofToString(beatDetector.isHat()) + ", sensitivity: " + ofToString(beatSensitivity/10.0f), 10, 58);
     ofEnableDepthTest();
 }
