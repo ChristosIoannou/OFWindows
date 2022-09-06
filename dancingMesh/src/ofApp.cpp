@@ -258,11 +258,13 @@ void ofApp::analyseFFT() {
 
 //--------------------------------------------------------------
 void ofApp::drawDancingMesh() {
+    ofDisableDepthTest();
     ofPushMatrix();         // Move center of coordinate system to the screen center
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     drawDancingMeshPoints();
     drawDancingMeshLines();
     ofPopMatrix();          // Restore coordinate system
+    ofEnableDepthTest();
 }
 
 //--------------------------------------------------------------
@@ -297,6 +299,7 @@ void ofApp::drawDancingMeshLines() {
 
 //--------------------------------------------------------------
 void ofApp::drawInfo() {
+    ofDisableDepthTest();
     //Draw background rect for spectrum
     ofSetColor(ofColor::black);
     ofFill();
@@ -322,4 +325,5 @@ void ofApp::drawInfo() {
     ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 20);
     ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", sampleSize: " + ofToString(fft->getSignalSize()), 10, 30);
     ofDrawBitmapString("spectrum    | numofbins: " + ofToString(spectrum.size()) + ", N: " + ofToString(N), 10, 40);
+    ofEnableDepthTest();
 }
