@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxFft.h"
 #include "ofxOpenCv.h"
+#include "ofxGui.h"
+#include "ofxXmlSettings.h"
 
 //bark mapping
 #define BARK_MAX 19         // 25
@@ -54,6 +56,7 @@ public:
     void setup();
     void update();
     void draw();
+    void exit();
 
     void keyPressed(int key);
     void keyReleased(int key);
@@ -68,6 +71,7 @@ public:
 
     //--- setup ----
     void setupSoundStream();
+    void setupGui();
     void setupFFT();
     void setupDancingMesh();
     void setupAudioSphere();
@@ -78,7 +82,7 @@ public:
     void updateAudioSphere();
 
     //--- draw ---
-    void drawInfo();
+    void drawGui(ofEventArgs& args);
     void drawAudioSphere();
     void drawDancingMesh();
     void drawDancingMeshPoints();
@@ -90,9 +94,6 @@ public:
     const int bufferSize = SPECTRAL_BANDS * 4;
     const int inChan = 2;
     const int outChan = 0;
-
-    //--- video ---
-
 
     //--- fft ---
     void analyseFFT();
@@ -111,8 +112,6 @@ public:
     const int n = 500;		//Number of cloud points
     float Rad = 500;		//Cloud raduis parameter
     float Vel = 0.1;		//Cloud points velocity parameter
-    int bandRad = 1;		//Band index in spectrum, affecting Rad value
-    int bandVel = 6;		//Band index in spectrum, affecting Vel value
 
     //--- audioSphere ---
     void buildSphereMesh(int radius, int sphereResolution, ofMesh& sphereMesh);
@@ -129,24 +128,49 @@ public:
     int sphereResolution = 250; //sphere resolution
     int fboResolution; //fbo resolution, will be sphere resolution
     float axisLocation; //which part of the axis to update
-    float posDecayRate = 0.995f;
+    float posDecayRate = 0.994f; // 0.995f
     float startOffsetAngle = 90.0f; //start offset for xaxis
     float angleIncrement;
 
     //--- time ---
     float time0 = 0;		//Time value, used for dt computing
 
-    //--- inputs ---
-    int volumeMultiplier = 4;
-    int beatSensitivity = 11;
-
     //--- production ---
     ofEasyCam cam;
 
     //--- key booleans ---
-    bool b_Info = false;
-    bool b_dancingMesh = false;
-    bool b_audioSphere = true;
-    bool autoRotate;
+
+    //--- GUI ---
+    ofParameterGroup paramsSpectra;
+    ofxPanel panelSpectra;
+    ofParameter<bool> drawSpectrum;
+    ofParameter<bool> drawBark;
+    ofParameter<bool> drawSignal;
+    
+    ofParameterGroup paramsFFT;
+    ofxPanel panelFFT;
+    ofParameter<float> volumeMultiplier;
+
+    ofParameterGroup paramsDancingMesh;
+    ofxPanel panelDancingMesh;
+    ofParameter<bool> b_dancingMesh;
+    ofParameter<int> bandRad;		//Band index in spectrum, affecting Rad value
+    ofParameter<int> bandVel;		//Band index in spectrum, affecting Vel value
+
+    ofParameterGroup paramsAudioSphere;
+    ofxPanel panelAudioSphere;
+    ofParameter<bool> b_audioSphere;
+    ofParameter<bool> autoRotate;
+    ofParameter<float> rotationSpeed;
+    ofParameter<bool> rotateSin;
+
+
+    //ofParameter<ofColor> color;
+    ofParameter<bool> b_Info = false;
+    //ofParameter<bool> b_dancingMesh = false;
+    //ofParameter<bool> b_audioSphere = true;
+    //ofParameter<bool> autoRotate;
+
+    
 
 };
