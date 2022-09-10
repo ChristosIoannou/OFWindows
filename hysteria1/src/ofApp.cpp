@@ -11,12 +11,10 @@ void ofApp::setup() {
     ofSetFrameRate(60);
     glPointSize(1.0);
 
-    autoRotate = true;
-
     setupSoundStream();
     setupFFT();
+    setupVideoGrabber();
     setupDancingMesh();
-
     setupAudioSphere();
 
 }
@@ -32,6 +30,8 @@ void ofApp::update() {
     dt = ofClamp(dt, 0.0, 0.1);
     time0 = time; //Store the current time
 
+    if (b_video)
+        updateVideoGrabber();
     if (b_dancingMesh)
         updateDancingMesh(dt);
     if (b_audioSphere)
@@ -47,66 +47,18 @@ void ofApp::draw() {
 
     if (b_Info)
         drawInfo();
+    if (b_video)
+        drawVideo();
 
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
-
+    
     if (b_dancingMesh)
         drawDancingMesh();
     if (b_audioSphere)
         drawAudioSphere();
 
     ofPopMatrix();
-}
-
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-
-    switch (key) {
-    case 'g':
-        b_Info = !b_Info;
-        break;
-    case 'd':
-        b_dancingMesh = !b_dancingMesh;
-        break;
-    case 'p':
-        b_audioSphere = !b_audioSphere;
-        break;
-    case '=':
-        volumeMultiplier++;
-        break;
-    case '-':
-        volumeMultiplier--;
-        break;
-    case '0':
-        beatSensitivity++;
-        break;
-    case '9':
-        beatSensitivity--;
-        break;
-    case 'f':
-        ofToggleFullscreen();
-        break;
-    case 'w':
-        if (bandRad < SPECTRAL_BANDS)
-            bandRad++;
-        break;
-    case 'q':
-        if (bandRad > 0)
-            bandRad--;
-        break;
-    case 's':
-        if (bandVel < SPECTRAL_BANDS)
-            bandVel++;
-        break;
-    case 'a':
-        if (bandVel > 0)
-            bandVel--;
-        break;
-    default:
-        break;
-    }
 }
 
 //--------------------------------------------------------------
@@ -196,6 +148,18 @@ void ofApp::setupSoundStream() {
 }
 
 //--------------------------------------------------------------
+void ofApp::setupVideoGrabber() {
+    videoGrabber.setVerbose(true);
+    videoGrabber.setup(320, 240);
+    colorImg.allocate(320, 240);
+    grayImg.allocate(320, 240);
+    grayBg.allocate(320, 240);
+    grayDiff.allocate(320, 240);
+    b_LearnBackground = true;
+    threshold = 80;
+}
+
+//--------------------------------------------------------------
 void ofApp::setupFFT() {
     fft = ofxFft::create(bufferSize, OF_FFT_WINDOW_HAMMING);
     audioInput = new float[bufferSize];
@@ -256,6 +220,35 @@ void ofApp::updateFFTandAnalyse() {
     spectrum = soundSpectrum;
     soundMutex.unlock();
     analyseFFT();
+}
+
+//--------------------------------------------------------------
+void ofApp::updateVideoGrabber() {
+    bool bNewFrame = false;
+    videoGrabber.update();
+    bNewFrame = videoGrabber.isFrameNew();
+    
+    if (bNewFrame) {
+        colorImg.setFromPixels(videoGrabber.getPixels());
+        grayImg = colorImg;
+        
+        //if (b_LearnBackground == true) {
+        //    grayBg = grayImg;
+        //    b_LearnBackground = false;
+        //}
+
+        // take the abs value of the difference between background and incoming and then threshold:
+        grayDiff.absDiff(grayBg, grayImg);
+        grayDiff.threshold(threshold);
+        grayDiff.dilate();
+        grayDiff.erode();
+
+        // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+        // also, find holes is set to true so we will get interior contours as well....
+        contourFinder.findContours(grayDiff, 20, (340 * 240) / 3, 10, true);	// find holes
+
+        grayBg = grayImg;
+    }
 }
 
 //--------------------------------------------------------------
@@ -335,12 +328,6 @@ void ofApp::updateAudioSphere() {
 //--------------------------------------------------------------
 void ofApp::drawInfo() {
     ofDisableDepthTest();
-    //Draw background rect for spectrum
-    //ofSetColor(ofColor::black);
-    //ofFill();
-    //ofDrawRectangle(10, 700, SPECTRAL_BANDS * 6, -100);
-    //Draw spectrum
-    //ofSetColor( ofColor::ghostWhite );
     for (int i = 0; i < SPECTRAL_BANDS; i++) {
         //Draw bandRad and bandVel by black color,
         //and other by gray color
@@ -361,6 +348,58 @@ void ofApp::drawInfo() {
     ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier / 4.0f), 10, 34);
     ofDrawBitmapString("spectrum    | band[0] " + ofToString(spectrum[0]) + ", band[1]: " + ofToString(spectrum[1]), 10, 46);
     ofEnableDepthTest();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawVideo() {
+
+    // draw the incoming, the grayscale, the bg and the thresholded difference
+    int width = videoGrabber.getWidth() + 50;
+    int height = videoGrabber.getHeight() + 50;
+
+    ofSetHexColor(0xffffff);
+    colorImg.draw((ofGetWidth() - width), (ofGetHeight()/2 - 1.5*height));
+    //grayImg.draw((videoGrabber.getWidth() + 20), -(videoGrabber.getHeight() + 20));
+    grayBg.draw((ofGetWidth() - width), (ofGetHeight()/2 - 0.5 * height));
+    grayDiff.draw((ofGetWidth() - width), (ofGetHeight()/2 + 0.5 * height));
+
+    ofPushMatrix();
+    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+
+    // then draw the contours:
+
+    ofFill();
+    ofSetHexColor(0x333333);
+    ofDrawRectangle(-width/2, -height/2, videoGrabber.getWidth(), videoGrabber.getHeight());
+    ofSetHexColor(0xffffff);
+
+    // we could draw the whole contour finder
+    //contourFinder.draw(360,540);
+
+    // or, instead we can draw each blob individually from the blobs vector,
+    // this is how to get access to them:
+    for (int i = 0; i < contourFinder.nBlobs; i++) {
+        contourFinder.blobs[i].draw(-width / 2, -height / 2);
+
+        // draw over the centroid if the blob is a hole
+        ofSetColor(255);
+        if (contourFinder.blobs[i].hole) {
+            ofDrawBitmapString("hole",
+                contourFinder.blobs[i].boundingRect.getCenter().x - (width / 2),
+                contourFinder.blobs[i].boundingRect.getCenter().y - (height / 2));
+        }
+    }
+
+    ofPopMatrix();
+
+    // finally, a report:
+    ofSetHexColor(0xffffff);
+    stringstream reportStr;
+    reportStr << "bg subtraction and blob detection" << endl
+        << "press ' ' to capture bg" << endl
+        << "threshold " << threshold << " (press: +/-)" << endl
+        << "num blobs found " << contourFinder.nBlobs << ", fps: " << ofGetFrameRate();
+    ofDrawBitmapString(reportStr.str(), 20, 600);
 }
 
 //--------------------------------------------------------------
@@ -432,6 +471,11 @@ void ofApp::drawAudioSphere() {
     //cam.end();
 }
 
+//===================== EXIT ===================================
+void ofApp::exit() {
+    soundStream.close();
+    videoGrabber.close();
+}
 
 //==================== HELPERS =================================
 //--------------------------------------------------------------
@@ -530,5 +574,65 @@ void ofApp::buildSphereMesh(int radius, int sphereResolution, ofMesh& sphereMesh
             idivn += unodivn;
 
         }
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
+
+    switch (key) {
+    case 'g':
+        b_Info = !b_Info;
+        break;
+    case 'd':
+        b_dancingMesh = !b_dancingMesh;
+        break;
+    case 'p':
+        b_audioSphere = !b_audioSphere;
+        break;
+    case '=':
+        volumeMultiplier++;
+        break;
+    case '-':
+        volumeMultiplier--;
+        break;
+    case '0':
+        beatSensitivity++;
+        break;
+    case '9':
+        beatSensitivity--;
+        break;
+    case 'f':
+        ofToggleFullscreen();
+        break;
+    case 'w':
+        if (bandRad < SPECTRAL_BANDS)
+            bandRad++;
+        break;
+    case 'q':
+        if (bandRad > 0)
+            bandRad--;
+        break;
+    case 's':
+        if (bandVel < SPECTRAL_BANDS)
+            bandVel++;
+        break;
+    case 'a':
+        if (bandVel > 0)
+            bandVel--;
+        break;
+    case ' ':
+        b_LearnBackground = true;
+        break;
+    case '8':
+        threshold++;
+        if (threshold > 255) threshold = 255;
+        break;
+    case '7':
+        threshold--;
+        if (threshold < 0) threshold = 0;
+        break;
+    default:
+        break;
     }
 }

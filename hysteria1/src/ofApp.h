@@ -54,6 +54,7 @@ public:
     void setup();
     void update();
     void draw();
+    void exit();
 
     void keyPressed(int key);
     void keyReleased(int key);
@@ -68,17 +69,20 @@ public:
 
     //--- setup ----
     void setupSoundStream();
+    void setupVideoGrabber();
     void setupFFT();
     void setupDancingMesh();
     void setupAudioSphere();
 
     //--- update ---
     void updateFFTandAnalyse();
+    void updateVideoGrabber();
     void updateDancingMesh(float dt);
     void updateAudioSphere();
 
     //--- draw ---
     void drawInfo();
+    void drawVideo();
     void drawAudioSphere();
     void drawDancingMesh();
     void drawDancingMeshPoints();
@@ -92,7 +96,14 @@ public:
     const int outChan = 0;
 
     //--- video ---
-
+    ofVideoGrabber videoGrabber;
+    ofxCvColorImage colorImg;
+    ofxCvGrayscaleImage grayImg;
+    ofxCvGrayscaleImage grayBg;
+    ofxCvGrayscaleImage grayDiff;
+    ofxCvContourFinder contourFinder;
+    int threshold;
+    bool b_LearnBackground;
 
     //--- fft ---
     void analyseFFT();
@@ -146,7 +157,8 @@ public:
     //--- key booleans ---
     bool b_Info = false;
     bool b_dancingMesh = false;
-    bool b_audioSphere = true;
-    bool autoRotate;
+    bool b_audioSphere = false;
+    bool b_video = true;
+    bool autoRotate = true;
 
 };
