@@ -8,7 +8,8 @@ int bark(float f) {
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-    ofSetFrameRate(60);
+    ofSetVerticalSync(true);
+    ofSetFrameRate(-1);
     glPointSize(1.0);
 
     autoRotate = true;
@@ -170,6 +171,16 @@ void ofApp::audioIn(ofSoundBuffer& input) {
 }
 
 //==================== SETUPS ==================================
+
+//--------------------------------------------------------------
+void ofApp::setupGui() {
+    parameters.setName("parameters");
+    parameters.add(radius.set("radius", 50, 1, 100));
+    parameters.add(color.set("color", 100, ofColor(0, 0), 255));
+    gui.setup(parameters);
+    ofSetBackgroundColor(0);
+}
+
 //--------------------------------------------------------------
 void ofApp::setupSoundStream() {
     ofSoundStreamSettings settings;
@@ -332,15 +343,14 @@ void ofApp::updateAudioSphere() {
 
 
 //======================= DRAW =================================
+
+//--------------------------------------------------------------
+void ofApp::drawGui(ofEventArgs& args) {
+    gui.draw();
+}
+
 //--------------------------------------------------------------
 void ofApp::drawInfo() {
-    ofDisableDepthTest();
-    //Draw background rect for spectrum
-    //ofSetColor(ofColor::black);
-    //ofFill();
-    //ofDrawRectangle(10, 700, SPECTRAL_BANDS * 6, -100);
-    //Draw spectrum
-    //ofSetColor( ofColor::ghostWhite );
     for (int i = 0; i < SPECTRAL_BANDS; i++) {
         //Draw bandRad and bandVel by black color,
         //and other by gray color
@@ -353,14 +363,12 @@ void ofApp::drawInfo() {
         else {
             ofSetColor(ofColor::lightGoldenRodYellow); //Gray color
         }
-        ofDrawRectangle(10 + i * 5, 700, 3, -spectrum[i] * 100);
     }
 
     ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
     ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 22);
     ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier / 4.0f), 10, 34);
     ofDrawBitmapString("spectrum    | band[0] " + ofToString(spectrum[0]) + ", band[1]: " + ofToString(spectrum[1]), 10, 46);
-    ofEnableDepthTest();
 }
 
 //--------------------------------------------------------------
