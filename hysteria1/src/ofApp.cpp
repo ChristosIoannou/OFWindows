@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include <cmath>
 
 int bark(float f) {
     float b = 13 * atan(0.00076 * f) + 3.5 * atan(pow(f / 7500.0f, 2));
@@ -45,10 +46,6 @@ void ofApp::draw() {
 
     ofBackground(ofColor::black);	//Set up the background
     ofEnableAlphaBlending();
-
-    if (b_Info)
-        drawInfo();
-
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
@@ -60,46 +57,18 @@ void ofApp::draw() {
     ofPopMatrix();
 }
 
+//--------------------------------------------------------------
+void ofApp::exit() {
+    soundStream.close();
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 
     switch (key) {
-    case 'g':
-        b_Info = !b_Info;
-        break;
-    case 'd':
-        b_dancingMesh = !b_dancingMesh;
-        break;
-    case 'p':
-        b_audioSphere = !b_audioSphere;
-        break;
-    //case '=':
-    //    volumeMultiplier++;
-    //    break;
-    //case '-':
-    //    volumeMultiplier--;
-    //    break;
+    case 'F':
     case 'f':
         ofToggleFullscreen();
-        break;
-    case 'w':
-        if (bandRad < SPECTRAL_BANDS)
-            bandRad++;
-        break;
-    case 'q':
-        if (bandRad > 0)
-            bandRad--;
-        break;
-    case 's':
-        if (bandVel < SPECTRAL_BANDS)
-            bandVel++;
-        break;
-    case 'a':
-        if (bandVel > 0)
-            bandVel--;
-        break;
-    default:
         break;
     }
 }
@@ -168,23 +137,32 @@ void ofApp::audioIn(ofSoundBuffer& input) {
 //--------------------------------------------------------------
 void ofApp::setupGui() {
 
+    // GUI
+    paramsSpectra.setName("Draw on GUI");
+    paramsSpectra.add(drawSpectrum.set("Spectrum", true));
+    paramsSpectra.add(drawBark.set("Bark", true));
+    paramsSpectra.add(drawSignal.set("Signal", true));
+    panelSpectra.setup(paramsSpectra, "settings.xml", 30.0, 160.0);
+
     // FFT/Spectrum
     paramsFFT.setName("FFT/Spectrum");
-    paramsFFT.add(volumeMultiplier.set("Volume", 1, 0, 5));
-    guiFFT.setup(paramsFFT);
+    paramsFFT.add(volumeMultiplier.set("Volume", 2, 0, 8));
+    panelFFT.setup(paramsFFT, "settings.xml", 30, 265);
 
     // DancingMesh
     paramsDancingMesh.setName("Dancing Mesh");
     paramsDancingMesh.add(b_dancingMesh.set("Draw", false));
     paramsDancingMesh.add(bandRad.set("Radius bin", 1, 0, SPECTRAL_BANDS));
     paramsDancingMesh.add(bandVel.set("Velocity bin", 10, 0, SPECTRAL_BANDS));
-    guiDancingMesh.setup(paramsDancingMesh);
+    panelDancingMesh.setup(paramsDancingMesh, "settings.xml", 260, 245);
 
     // AudioSphere
     paramsAudioSphere.setName("Audio Sphere");
     paramsAudioSphere.add(b_audioSphere.set("Draw", true));
     paramsAudioSphere.add(autoRotate.set("Rotate", true));
-    guiAudioSphere.setup(paramsAudioSphere);
+    paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, 0, 2));
+    paramsAudioSphere.add(rotateSin.set("Sin Rotation", false));
+    panelAudioSphere.setup(paramsAudioSphere, "settings.xml", 490, 160);
 
     ofSetBackgroundColor(0);
 }
@@ -248,9 +226,9 @@ void ofApp::setupAudioSphere() {
         barkmap[i] = bidx;
     }
 
-    posShader.load("", "position.frag");       //load the position updating frag shader    
     fboResolution = sphereResolution;      //for the sphere we set this to the resolution which = #of verts along each axis
-
+    posShader.load("", "position.frag");       //load the position updating frag shader    
+   
     //init the fbo's with blank data
     vector<ofVec3f> fbo_init_data;
     fbo_init_data.assign(fboResolution * fboResolution, ofVec3f(0.0, 0.0, 0.0));
@@ -354,31 +332,83 @@ void ofApp::updateAudioSphere() {
 
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
-    guiFFT.draw();
-    guiDancingMesh.draw();
-    guiAudioSphere.draw();
-}
+    
+    panelSpectra.draw();
+    panelFFT.draw();
+    panelDancingMesh.draw();
+    panelAudioSphere.draw();
 
-//--------------------------------------------------------------
-void ofApp::drawInfo() {
-    for (int i = 0; i < SPECTRAL_BANDS; i++) {
-        //Draw bandRad and bandVel by black color,
-        //and other by gray color
-        if (i == bandRad) {
-            ofSetColor(ofColor::red); //Black color
+    // draw fft spectrum
+    if (drawSpectrum) {
+        ofPushMatrix();
+        ofTranslate(10, 20);
+        ofSetLineWidth(1);
+        ofNoFill();
+        ofSetColor(ofColor::pink);
+        ofDrawBitmapString("FFT Spectrum:", 0, 0);
+        ofRect(0, 10, SPECTRAL_BANDS * 5, 100);
+        ofSetColor(ofColor::orange);
+        for (int i = 0; i < SPECTRAL_BANDS; i++) {
+            //Draw bandRad and bandVel by black color,
+            //and other by gray color
+            if (i == bandRad) {
+                ofSetColor(ofColor::red); //Black color
+            }
+            else if (i == bandVel) {
+                ofSetColor(ofColor::green);
+            }
+            else {
+                ofSetColor(ofColor::lightGoldenRodYellow); //Gray color
+            }
+            ofDrawRectangle(i * 5, 110, 3, -spectrum[i] * 50);
         }
-        else if (i == bandVel) {
-            ofSetColor(ofColor::green);
-        }
-        else {
-            ofSetColor(ofColor::lightGoldenRodYellow); //Gray color
-        }
+        ofPopMatrix();
     }
 
-    ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
-    ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 22);
-    ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier), 10, 34);
-    ofDrawBitmapString("spectrum    | band[0] " + ofToString(spectrum[0]) + ", band[1]: " + ofToString(spectrum[1]), 10, 46);
+    // draw bark spectrum
+    if (drawBark) {
+        ofPushMatrix();
+        ofTranslate(280, 20);
+        ofDrawBitmapString("Bark Spectrum:", 0, 0);
+        ofRect(0, 10, BARK_MAX * 10, 100);
+        ofSetColor(ofColor::orange);
+        for (int i = 0; i < BARK_MAX; i++) {
+            //Draw bandRad and bandVel by black color,
+            //and other by gray color
+            ofSetColor(ofColor::pink); //Gray color
+            ofDrawRectangle(i * 10, 110, 3, -bins[i] * 0.6);
+        }
+        ofPopMatrix();
+    }
+
+    // draw buffer
+    if (drawSignal) {
+        ofPushMatrix();
+        ofTranslate(500, 20);
+        ofDrawBitmapString("Signal:", 0, 0);
+        ofRect(0, 10, bufferSize, 100);
+        ofSetColor(ofColor::orange);
+        ofBeginShape();
+        for (int i = 0; i < bufferSize; i++) {
+            float signalValue = abs(fft->getSignal()[i] * 60) < 42 ? fft->getSignal()[i] * 60 : 42;
+            ofVertex(i, 60 - signalValue);
+            //std::cout << fft->getSignal()[i] * 60 << std::endl;
+        }
+        ofEndShape(false);
+        ofPopMatrix();
+    }
+
+    ofPushMatrix();
+    ofTranslate(270, 170);
+    float fps = ofGetFrameRate();
+    float fpsHue = ofMap(fps, 20, 60, 0, 85);
+    ofColor fpsColor;
+    fpsColor.setHsb(fpsHue, 255, 255);
+    ofSetColor(fpsColor);
+    ofRect(0, 0, 180, 40);
+    ofDrawBitmapString("FPS: " + ofToString(fps), 45, 25);
+    ofPopMatrix();
+
 }
 
 //--------------------------------------------------------------
@@ -425,7 +455,9 @@ void ofApp::drawAudioSphere() {
 
     if (autoRotate) {
         ofRotateY(-30);
-        ofRotateX(startOffsetAngle += angleIncrement);
+        if (rotateSin)
+            rotationSpeed = 2 * sin(ofGetFrameNum() * 0.005);
+        ofRotateX(startOffsetAngle += angleIncrement * rotationSpeed);
         ofRotateZ(ofGetFrameNum() * 0.005);
     }
     else {

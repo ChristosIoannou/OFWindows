@@ -11,9 +11,9 @@ int main( ){
 	settings.resizable = true;
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
-	settings.setSize(500, 500);
+	settings.setSize(750, 750);
 	settings.setPosition(glm::vec2(0, 300));
-	settings.resizable = false;
+	settings.resizable = true;
 	shared_ptr<ofAppBaseWindow> guiWindow = ofCreateWindow(settings);
 	guiWindow->setVerticalSync(false);
 
