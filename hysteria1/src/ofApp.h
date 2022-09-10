@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxFft.h"
+#include "ofxOpenCv.h"
 
 //bark mapping
 #define BARK_MAX 19         // 25
@@ -90,6 +91,9 @@ public:
     const int inChan = 2;
     const int outChan = 0;
 
+    //--- video ---
+
+
     //--- fft ---
     void analyseFFT();
     ofxFft* fft;
@@ -111,26 +115,23 @@ public:
     int bandVel = 6;		//Band index in spectrum, affecting Vel value
 
     //--- audioSphere ---
-    void buildSphereMesh(int radius, int res, ofMesh& sphereMesh);
-    ofTexture eq_tex; //the eq curve texture we pass to the fbo
-    ofPath eq_path; //we use this path to build the texture
+    void buildSphereMesh(int radius, int sphereResolution, ofMesh& sphereMesh);
+    ofTexture eqTexture; //the eq curve texture we pass to the fbo
+    ofPath eqPath; //we use this path to build the texture
     ofVboMesh vm; //the mesh of the sphere
     ofShader shader;
-    ofShader disp_shader;
-    ofShader pos_shader;
-    pingPongBuffer posbuf;
+    ofShader dispShader;
+    ofShader posShader;
+    pingPongBuffer posBuffer;
     float bins[BARK_MAX]; //where we sum up our spectral info
     int barkmap[SPECTRAL_BANDS]; //if i is the index of spectrum band, barkmap[i] gives which bin it goes to.
-    int rad = 300; //sphere radius
-    int res = 250; //sphere resolution
-    int fbo_res; //fbo resolution, will be sphere resolution
-    float axis_loc; //which part of the axis to update
-    float posdecayrate = 0.995f;
-    bool drawFBO;
-    bool autoRotate;
-    bool drawEQ;
-    float ang = 90.0f; //start offset for xaxis
-    float angincr;
+    int sphereRadius = 300; //sphere radius
+    int sphereResolution = 250; //sphere resolution
+    int fboResolution; //fbo resolution, will be sphere resolution
+    float axisLocation; //which part of the axis to update
+    float posDecayRate = 0.995f;
+    float startOffsetAngle = 90.0f; //start offset for xaxis
+    float angleIncrement;
 
     //--- time ---
     float time0 = 0;		//Time value, used for dt computing
@@ -146,4 +147,6 @@ public:
     bool b_Info = false;
     bool b_dancingMesh = false;
     bool b_audioSphere = true;
+    bool autoRotate;
+
 };

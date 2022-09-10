@@ -11,9 +11,7 @@ void ofApp::setup() {
     ofSetFrameRate(60);
     glPointSize(1.0);
 
-    drawFBO = false;
     autoRotate = true;
-    drawEQ = false;
 
     setupSoundStream();
     setupFFT();
@@ -219,7 +217,7 @@ void ofApp::setupDancingMesh() {
 //--------------------------------------------------------------
 void ofApp::setupAudioSphere() {
     //generate the mesh points
-    buildSphereMesh(rad, res, vm);
+    buildSphereMesh(sphereRadius, sphereResolution, vm);
     cout << "nverts: " << vm.getNumVertices() << endl;
     cout << "arb: " << ofGetUsingArbTex() << ", norm: " << ofGetUsingNormalizedTexCoords() << endl;
 
@@ -231,23 +229,23 @@ void ofApp::setupAudioSphere() {
         barkmap[i] = bidx;
     }
 
-    pos_shader.load("", "position.frag");       //load the position updating frag shader    
-    fbo_res = res;      //for the sphere we set this to the resolution which = #of verts along each axis
+    posShader.load("", "position.frag");       //load the position updating frag shader    
+    fboResolution = sphereResolution;      //for the sphere we set this to the resolution which = #of verts along each axis
 
     //init the fbo's with blank data
     vector<ofVec3f> fbo_init_data;
-    fbo_init_data.assign(fbo_res * fbo_res, ofVec3f(0.0, 0.0, 0.0));
+    fbo_init_data.assign(fboResolution * fboResolution, ofVec3f(0.0, 0.0, 0.0));
 
-    posbuf.allocate(fbo_res, fbo_res, GL_RGB32F);
-    posbuf.src->getTextureReference().loadData((float*)&fbo_init_data[0], fbo_res, fbo_res, GL_RGB);
-    posbuf.dst->getTextureReference().loadData((float*)&fbo_init_data[0], fbo_res, fbo_res, GL_RGB);
+    posBuffer.allocate(fboResolution, fboResolution, GL_RGB32F);
+    posBuffer.src->getTextureReference().loadData((float*)&fbo_init_data[0], fboResolution, fboResolution, GL_RGB);
+    posBuffer.dst->getTextureReference().loadData((float*)&fbo_init_data[0], fboResolution, fboResolution, GL_RGB);
 
     //reuse fbo_init_data for no real reason, it just needs to be blank
-    eq_tex.allocate(fbo_res, 1, GL_RGB32F_ARB);
-    eq_tex.loadData((float*)&fbo_init_data[0], fbo_res, 1, GL_RGB);
+    eqTexture.allocate(fboResolution, 1, GL_RGB32F_ARB);
+    eqTexture.loadData((float*)&fbo_init_data[0], fboResolution, 1, GL_RGB);
 
-    axis_loc = fbo_res;
-    angincr = 180.0 / (float)fbo_res;
+    axisLocation = fboResolution;
+    angleIncrement = 180.0 / (float)fboResolution;
 }
 
 
@@ -289,47 +287,47 @@ void ofApp::updateAudioSphere() {
     }
 
     /* put the eq vals into a path to turn them into a curve */
-    int line_len = fbo_res;
+    int line_len = fboResolution;
     float ppseg = line_len / (float)(BARK_MAX + 1);
-    eq_path.clear();
-    eq_path.curveTo(0, -bins[0]);
+    eqPath.clear();
+    eqPath.curveTo(0, -bins[0]);
     for (int i = 0; i < BARK_MAX; i++) {
-        eq_path.curveTo(i * ppseg, -bins[i]);
+        eqPath.curveTo(i * ppseg, -bins[i]);
     }
 
     //smooth this out a little at the end so the eq texture wraps, 25 = BARK_MAX
-    //eq_path.curveTo(25 * ppseg, -(bins[0] + bins[BARK_MAX] + bins[BARK_MAX - 1] + bins[BARK_MAX - 2]) / 4.0f);
-    //eq_path.curveTo(26 * ppseg, -bins[0]);
-    //eq_path.curveTo(26 * ppseg, -bins[0]);
+    //eqPath.curveTo(25 * ppseg, -(bins[0] + bins[BARK_MAX] + bins[BARK_MAX - 1] + bins[BARK_MAX - 2]) / 4.0f);
+    //eqPath.curveTo(26 * ppseg, -bins[0]);
+    //eqPath.curveTo(26 * ppseg, -bins[0]);
 
-    ofMesh eq_m = eq_path.getTessellation();
+    ofMesh eq_m = eqPath.getTessellation();
 
-    eq_tex.loadData((float*)eq_m.getVerticesPointer(), fbo_res, 1, GL_RGB); //load up the eq curve into a texture
-    axis_loc--;     //update where on the axis we will apply the latest eq data
+    eqTexture.loadData((float*)eq_m.getVerticesPointer(), fboResolution, 1, GL_RGB); //load up the eq curve into a texture
+    axisLocation--;     //update where on the axis we will apply the latest eq data
 
-    if (axis_loc < 0)
-        axis_loc = fbo_res;
+    if (axisLocation < 0)
+        axisLocation = fboResolution;
 
     //use fbo to work out displacement coeffcients
-    posbuf.dst->begin();
+    posBuffer.dst->begin();
     ofClear(0);
-    pos_shader.begin();
-    pos_shader.setUniformTexture("u_prevDisp", posbuf.src->getTextureReference(), 0);
-    pos_shader.setUniformTexture("u_newDisp", eq_tex, 1); //pass the new displacement data
-    pos_shader.setUniform1f("u_axisloc", axis_loc);
-    pos_shader.setUniform1f("u_decayRate", posdecayrate);
+    posShader.begin();
+    posShader.setUniformTexture("u_prevDisp", posBuffer.src->getTextureReference(), 0);
+    posShader.setUniformTexture("u_newDisp", eqTexture, 1); //pass the new displacement data
+    posShader.setUniform1f("u_axisloc", axisLocation);
+    posShader.setUniform1f("u_decayRate", posDecayRate);
 
     ofSetColor(255, 255, 255, 255);
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-    glTexCoord2f(fbo_res, 0); glVertex3f(fbo_res, 0, 0);
-    glTexCoord2f(fbo_res, fbo_res); glVertex3f(fbo_res, fbo_res, 0);
-    glTexCoord2f(0, fbo_res); glVertex3f(0, fbo_res, 0);
+    glTexCoord2f(fboResolution, 0); glVertex3f(fboResolution, 0, 0);
+    glTexCoord2f(fboResolution, fboResolution); glVertex3f(fboResolution, fboResolution, 0);
+    glTexCoord2f(0, fboResolution); glVertex3f(0, fboResolution, 0);
     glEnd();
 
-    pos_shader.end();
-    posbuf.dst->end();
-    posbuf.swap();
+    posShader.end();
+    posBuffer.dst->end();
+    posBuffer.swap();
 }
 
 
@@ -409,7 +407,7 @@ void ofApp::drawAudioSphere() {
 
     if (autoRotate) {
         ofRotateY(-30);
-        ofRotateX(ang += angincr);
+        ofRotateX(startOffsetAngle += angleIncrement);
         ofRotateZ(ofGetFrameNum() * 0.005);
     }
     else {
@@ -422,8 +420,8 @@ void ofApp::drawAudioSphere() {
     glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
     shader.begin();
-    shader.setUniformTexture("u_OffMap", posbuf.src->getTextureReference(), 0);
-    shader.setUniform1f("u_fboRes", (float)fbo_res);
+    shader.setUniformTexture("u_OffMap", posBuffer.src->getTextureReference(), 0);
+    shader.setUniform1f("u_fboRes", (float)fboResolution);
 
     vm.drawVertices();
 
@@ -455,9 +453,9 @@ void ofApp::analyseFFT() {
 }
 
 //--------------------------------------------------------------
-void ofApp::buildSphereMesh(int radius, int res, ofMesh& sphereMesh) {
+void ofApp::buildSphereMesh(int radius, int sphereResolution, ofMesh& sphereMesh) {
 
-    int n = res * 2;
+    int n = sphereResolution * 2;
     float ndiv2 = (float)n / 2;
 
     float theta2 = TWO_PI;
