@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxFft.h"
 #include "ofxOpenCv.h"
+#include "ofxGui.h"
 
 //bark mapping
 #define BARK_MAX 19         // 25
@@ -68,6 +69,7 @@ public:
 
     //--- setup ----
     void setupSoundStream();
+    void setupGui();
     void setupFFT();
     void setupDancingMesh();
     void setupAudioSphere();
@@ -78,6 +80,7 @@ public:
     void updateAudioSphere();
 
     //--- draw ---
+    void drawGui(ofEventArgs& args);
     void drawInfo();
     void drawAudioSphere();
     void drawDancingMesh();
@@ -148,5 +151,11 @@ public:
     bool b_dancingMesh = false;
     bool b_audioSphere = true;
     bool autoRotate;
+
+    //--- GUI ---
+    ofParameterGroup parameters;
+    ofParameter<float> radius;
+    ofParameter<ofColor> color;
+    ofxPanel gui;
 
 };
