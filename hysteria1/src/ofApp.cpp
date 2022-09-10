@@ -74,18 +74,12 @@ void ofApp::keyPressed(int key) {
     case 'p':
         b_audioSphere = !b_audioSphere;
         break;
-    case '=':
-        volumeMultiplier++;
-        break;
-    case '-':
-        volumeMultiplier--;
-        break;
-    case '0':
-        beatSensitivity++;
-        break;
-    case '9':
-        beatSensitivity--;
-        break;
+    //case '=':
+    //    volumeMultiplier++;
+    //    break;
+    //case '-':
+    //    volumeMultiplier--;
+    //    break;
     case 'f':
         ofToggleFullscreen();
         break;
@@ -159,7 +153,7 @@ void ofApp::audioIn(ofSoundBuffer& input) {
     memcpy(fftOutput, fft->getAmplitude(), sizeof(float) * SPECTRAL_BANDS);
 
     for (int i = 0; i < SPECTRAL_BANDS; i++) {
-        fftOutput[i] = fftOutput[i] * (volumeMultiplier / 4.0f);
+        fftOutput[i] = fftOutput[i] * volumeMultiplier;
     }
 
     ////Update our smoothed spectrum
@@ -171,13 +165,27 @@ void ofApp::audioIn(ofSoundBuffer& input) {
 }
 
 //==================== SETUPS ==================================
-
 //--------------------------------------------------------------
 void ofApp::setupGui() {
-    parameters.setName("parameters");
-    parameters.add(radius.set("radius", 50, 1, 100));
-    parameters.add(color.set("color", 100, ofColor(0, 0), 255));
-    gui.setup(parameters);
+
+    // FFT/Spectrum
+    paramsFFT.setName("FFT/Spectrum");
+    paramsFFT.add(volumeMultiplier.set("Volume", 1, 0, 5));
+    guiFFT.setup(paramsFFT);
+
+    // DancingMesh
+    paramsDancingMesh.setName("Dancing Mesh");
+    paramsDancingMesh.add(b_dancingMesh.set("Draw", false));
+    paramsDancingMesh.add(bandRad.set("Radius bin", 1, 0, SPECTRAL_BANDS));
+    paramsDancingMesh.add(bandVel.set("Velocity bin", 10, 0, SPECTRAL_BANDS));
+    guiDancingMesh.setup(paramsDancingMesh);
+
+    // AudioSphere
+    paramsAudioSphere.setName("Audio Sphere");
+    paramsAudioSphere.add(b_audioSphere.set("Draw", true));
+    paramsAudioSphere.add(autoRotate.set("Rotate", true));
+    guiAudioSphere.setup(paramsAudioSphere);
+
     ofSetBackgroundColor(0);
 }
 
@@ -346,7 +354,9 @@ void ofApp::updateAudioSphere() {
 
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
-    gui.draw();
+    guiFFT.draw();
+    guiDancingMesh.draw();
+    guiAudioSphere.draw();
 }
 
 //--------------------------------------------------------------
@@ -367,7 +377,7 @@ void ofApp::drawInfo() {
 
     ofDrawBitmapString("screen      | fps: " + ofToString(ofGetFrameRate()), 10, 10);
     ofDrawBitmapString("soundStream | bufferSize: " + ofToString(soundStream.getBufferSize()) + ", sampleRate: " + ofToString(soundStream.getSampleRate()), 10, 22);
-    ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier / 4.0f), 10, 34);
+    ofDrawBitmapString("fft         | binSize: " + ofToString(fft->getBinSize()) + ", volume: " + ofToString(volumeMultiplier), 10, 34);
     ofDrawBitmapString("spectrum    | band[0] " + ofToString(spectrum[0]) + ", band[1]: " + ofToString(spectrum[1]), 10, 46);
 }
 

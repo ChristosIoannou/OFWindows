@@ -114,8 +114,6 @@ public:
     const int n = 500;		//Number of cloud points
     float Rad = 500;		//Cloud raduis parameter
     float Vel = 0.1;		//Cloud points velocity parameter
-    int bandRad = 1;		//Band index in spectrum, affecting Rad value
-    int bandVel = 6;		//Band index in spectrum, affecting Vel value
 
     //--- audioSphere ---
     void buildSphereMesh(int radius, int sphereResolution, ofMesh& sphereMesh);
@@ -140,22 +138,40 @@ public:
     float time0 = 0;		//Time value, used for dt computing
 
     //--- inputs ---
-    int volumeMultiplier = 4;
-    int beatSensitivity = 11;
+    //int volumeMultiplier = 4;
 
     //--- production ---
     ofEasyCam cam;
 
     //--- key booleans ---
-    bool b_Info = false;
-    bool b_dancingMesh = false;
-    bool b_audioSphere = true;
-    bool autoRotate;
 
     //--- GUI ---
-    ofParameterGroup parameters;
-    ofParameter<float> radius;
-    ofParameter<ofColor> color;
-    ofxPanel gui;
+    ofParameterGroup paramsDraw;
+    ofxPanel guiDraw;
+    ofParameter<bool> b_dancingMesh;
+    ofParameter<bool> b_audioSphere;
+
+
+    ofParameterGroup paramsFFT;
+    ofxPanel guiFFT;
+    ofParameter<float> volumeMultiplier;
+
+    ofParameterGroup paramsDancingMesh;
+    ofxPanel guiDancingMesh;
+    ofParameter<int> bandRad;		//Band index in spectrum, affecting Rad value
+    ofParameter<int> bandVel;		//Band index in spectrum, affecting Vel value
+
+    ofParameterGroup paramsAudioSphere;
+    ofxPanel guiAudioSphere;
+    ofParameter<bool> autoRotate;
+
+
+    //ofParameter<ofColor> color;
+    ofParameter<bool> b_Info = false;
+    //ofParameter<bool> b_dancingMesh = false;
+    //ofParameter<bool> b_audioSphere = true;
+    //ofParameter<bool> autoRotate;
+
+    
 
 };
