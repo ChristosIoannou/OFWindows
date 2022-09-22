@@ -5,6 +5,7 @@
 #include "ofxOpenCv.h"
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
+#include "ofxKinect.h"
 
 //bark mapping
 #define BARK_MAX 19         // 25
@@ -71,22 +72,30 @@ public:
 
     //--- setup ----
     void setupSoundStream();
+    void setupKinect();
     void setupGui();
     void setupFFT();
+    void setupBeatDetector();
     void setupDancingMesh();
     void setupAudioSphere();
+    void setupFlashingText();
 
     //--- update ---
     void updateFFTandAnalyse();
+    void updateBeatDetector();
+    void updateKinect();
     void updateDancingMesh(float dt);
     void updateAudioSphere();
+    void updateFlashingText();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
+    void drawKinect();
     void drawAudioSphere();
     void drawDancingMesh();
     void drawDancingMeshPoints();
     void drawDancingMeshLines();
+    void drawFlashingText();
 
     //--- soundStream ---
     ofSoundStream soundStream;
@@ -105,6 +114,15 @@ public:
     float bass, mids, highs, totals;
     int red, green, blue;
     float brightness;
+
+    //--- beatDetector ---
+    typedef std::deque<std::vector<float>> FFTHistoryContainer;
+    static void fillAverageSpectrum(float* averageSpectrum, int numBands, const FFTHistoryContainer& fftHistory);
+    static void fillVarianceSpectrum(float* varianceSpectrum, int numBands, const FFTHistoryContainer& fftHistory, const float* averageSpectrum);
+    static float beatThreshold(float variance);
+    int FFTHistoryMaxSize;
+    std::vector<int> beatDetectorBandLimits;
+    FFTHistoryContainer beatDetector;
 
     //--- dancingMesh ---
     std::vector<float> tx, ty;		//Offsets for Perlin noise calculation for points
@@ -128,7 +146,6 @@ public:
     int sphereResolution = 250; //sphere resolution
     int fboResolution; //fbo resolution, will be sphere resolution
     float axisLocation; //which part of the axis to update
-    float posDecayRate = 0.994f; // 0.995f
     float startOffsetAngle = 90.0f; //start offset for xaxis
     float angleIncrement;
 
@@ -138,7 +155,31 @@ public:
     //--- production ---
     ofEasyCam cam;
 
-    //--- key booleans ---
+    //--- flashingText ---
+    ofParameterGroup paramsFlashingText;
+    ofxPanel panelFlashingText;
+    ofParameter<std::string> inputMessage;
+    ofParameter<bool> b_flashingText;
+    ofParameter<float> markMax;            // max on time (s)
+    ofParameter<float> spaceMax;         // max off time (s)
+    ofParameter<int> framesLeft;    // (s)
+    ofParameter<int> numFlashes;
+    ofTrueTypeFont eastBorderFont;
+    std::vector<int> flashFrames;
+    int startingFrameNumber = 0;
+    int flashIdx = 0;
+    float colorRand = 0;
+    int xshift, yshift;
+
+    //--- kinect ---
+    void drawPointCloud();
+    ofxKinect kinect;
+    ofxCvColorImage colorImg;
+    ofxCvGrayscaleImage grayImage;
+    ofxCvGrayscaleImage grayThreshNear;
+    ofxCvGrayscaleImage grayThreshFar;
+    ofxCvContourFinder contourFinder;
+    int angle;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
@@ -163,14 +204,13 @@ public:
     ofParameter<bool> autoRotate;
     ofParameter<float> rotationSpeed;
     ofParameter<bool> rotateSin;
+    ofParameter<float> posDecayRate; // = 0.996f; // 0.995f
 
-
-    //ofParameter<ofColor> color;
-    ofParameter<bool> b_Info = false;
-    //ofParameter<bool> b_dancingMesh = false;
-    //ofParameter<bool> b_audioSphere = true;
-    //ofParameter<bool> autoRotate;
-
-    
-
+    ofParameterGroup paramsKinect;
+    ofxPanel panelKinect;
+    ofParameter<bool> b_kinect;
+    ofParameter<bool> bDrawPointCloud;
+    ofParameter<bool> bThreshWithOpenCV;
+    ofParameter<int> nearThreshold;
+    ofParameter<int> farThreshold;
 };

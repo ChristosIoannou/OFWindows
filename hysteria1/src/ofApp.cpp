@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include <cmath>
+#include <random>
 
 int bark(float f) {
     float b = 13 * atan(0.00076 * f) + 3.5 * atan(pow(f / 7500.0f, 2));
@@ -13,14 +14,12 @@ void ofApp::setup() {
     ofSetFrameRate(-1);
     glPointSize(1.0);
 
-    autoRotate = true;
-
     setupSoundStream();
     setupFFT();
+    setupKinect();
     setupDancingMesh();
-
     setupAudioSphere();
-
+    setupFlashingText();
 }
 
 //--------------------------------------------------------------
@@ -34,8 +33,12 @@ void ofApp::update() {
     dt = ofClamp(dt, 0.0, 0.1);
     time0 = time; //Store the current time
 
+    if (b_kinect)
+        updateKinect();
     if (b_dancingMesh)
         updateDancingMesh(dt);
+    if (b_flashingText)
+        updateFlashingText();
     if (b_audioSphere)
         updateAudioSphere();
 
@@ -45,21 +48,32 @@ void ofApp::update() {
 void ofApp::draw() {
 
     ofBackground(ofColor::black);	//Set up the background
+
+    if (b_kinect)
+        drawKinect();
+
     ofEnableAlphaBlending();
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+    //cam.begin();
 
     if (b_dancingMesh)
         drawDancingMesh();
+
+    drawFlashingText();
+
     if (b_audioSphere)
         drawAudioSphere();
 
+    //cam.end();
     ofPopMatrix();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit() {
     soundStream.close();
+    kinect.setCameraTiltAngle(0); // zero the tilt on exit
+    kinect.close();
 }
 
 //--------------------------------------------------------------
@@ -69,6 +83,16 @@ void ofApp::keyPressed(int key) {
     case 'F':
     case 'f':
         ofToggleFullscreen();
+        break;
+    case OF_KEY_UP:
+        angle++;
+        if (angle > 30) angle = 30;
+        kinect.setCameraTiltAngle(angle);
+        break;
+    case OF_KEY_DOWN:
+        angle--;
+        if (angle < -30) angle = -30;
+        kinect.setCameraTiltAngle(angle);
         break;
     }
 }
@@ -151,18 +175,38 @@ void ofApp::setupGui() {
 
     // DancingMesh
     paramsDancingMesh.setName("Dancing Mesh");
-    paramsDancingMesh.add(b_dancingMesh.set("Draw", false));
+    paramsDancingMesh.add(b_dancingMesh.set("Draw DM", false));
     paramsDancingMesh.add(bandRad.set("Radius bin", 1, 0, SPECTRAL_BANDS));
     paramsDancingMesh.add(bandVel.set("Velocity bin", 10, 0, SPECTRAL_BANDS));
     panelDancingMesh.setup(paramsDancingMesh, "settings.xml", 260, 245);
 
     // AudioSphere
     paramsAudioSphere.setName("Audio Sphere");
-    paramsAudioSphere.add(b_audioSphere.set("Draw", true));
+    paramsAudioSphere.add(b_audioSphere.set("Draw AS", true));
     paramsAudioSphere.add(autoRotate.set("Rotate", true));
-    paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, 0, 2));
+    paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, -2, 2));
     paramsAudioSphere.add(rotateSin.set("Sin Rotation", false));
+    paramsAudioSphere.add(posDecayRate.set("Decay Rate", 0.995, 0.99, 0.9999));
     panelAudioSphere.setup(paramsAudioSphere, "settings.xml", 490, 160);
+
+    // FlashingText
+    paramsFlashingText.setName("Flashing Text");
+    paramsFlashingText.add(b_flashingText.set("Draw FT", false));
+    paramsFlashingText.add(inputMessage.set("Message", "THE QUEEN IS DEAD"));
+    paramsFlashingText.add(markMax.set("Mark (s)", 0.25, 0, 1));
+    paramsFlashingText.add(spaceMax.set("Space (s)", 1.2, 0, 1.5));
+    paramsFlashingText.add(numFlashes.set("Number of flashes", 10, 0, 20));
+    paramsFlashingText.add(framesLeft.set("Frames Left", 0, 0, 1200));
+    panelFlashingText.setup(paramsFlashingText, "settings.xml", 490, 270);
+
+    // Kinect
+    paramsKinect.setName("Kinect");
+    paramsKinect.add(b_kinect.set("Do", false));
+    paramsKinect.add(bThreshWithOpenCV.set("Thresh with OpenCV", true));
+    paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
+    paramsKinect.add(nearThreshold.set("Near thresh", 230, 0, 255));
+    paramsKinect.add(farThreshold.set("Far thresh", 70, 0, 255));
+    panelKinect.setup(paramsKinect, "settings.xml", 30, 380);
 
     ofSetBackgroundColor(0);
 }
@@ -190,6 +234,23 @@ void ofApp::setupSoundStream() {
     settings.numInputChannels = 2;
     settings.bufferSize = bufferSize;
     soundStream.setup(settings);
+}
+
+//--------------------------------------------------------------
+void ofApp::setupKinect() {
+
+    kinect.setRegistration(true);   // enable depth->video image calibration
+    kinect.init();  // shows normal RGB video image
+    //kinect.init(true); // shows infrared instead of RGB video image
+    //kinect.init(false, false); // disable video image (faster fps)
+
+    kinect.open();
+    colorImg.allocate(kinect.width, kinect.height);
+    grayImage.allocate(kinect.width, kinect.height);
+    grayThreshNear.allocate(kinect.width, kinect.height);
+    grayThreshFar.allocate(kinect.width, kinect.height);
+    angle = 0;  // zero the tilt on startup
+    kinect.setCameraTiltAngle(angle);
 }
 
 //--------------------------------------------------------------
@@ -245,6 +306,29 @@ void ofApp::setupAudioSphere() {
     angleIncrement = 180.0 / (float)fboResolution;
 }
 
+//--------------------------------------------------------------
+void ofApp::setupFlashingText() {
+    eastBorderFont.load("East Border.ttf", 85);
+}
+
+//--------------------------------------------------------------
+void ofApp::setupBeatDetector() {
+    FFTHistoryMaxSize = FREQ_MAX / bufferSize;
+    int bandSize = FFTHistoryMaxSize;
+    beatDetectorBandLimits.clear();
+    beatDetectorBandLimits.reserve(4);
+
+    // BASS 60hz - 130 Hz (Kick)
+    beatDetectorBandLimits.push_back(60 / bandSize);
+    beatDetectorBandLimits.push_back(130 / bandSize);
+
+    // LOW-MIDRange 301 - 750Hz (Snare)
+    beatDetectorBandLimits.push_back(301 / bandSize);
+    beatDetectorBandLimits.push_back(750 / bandSize);
+
+    beatDetector.clear();
+}
+
 
 //==================== UPDATES =================================
 //--------------------------------------------------------------
@@ -253,6 +337,54 @@ void ofApp::updateFFTandAnalyse() {
     spectrum = soundSpectrum;
     soundMutex.unlock();
     analyseFFT();
+}
+
+//--------------------------------------------------------------
+void ofApp::updateBeatDetector() {
+
+
+}
+
+//--------------------------------------------------------------
+void ofApp::updateKinect() {
+    kinect.update();
+    // there is a new frame and we are connected
+    if (kinect.isFrameNew()) {
+
+        // load grayscale depth image from the kinect source
+        grayImage.setFromPixels(kinect.getDepthPixels());
+
+        // we do two thresholds - one for the far plane and one for the near plane
+        // we then do a cvAnd to get the pixels which are a union of the two thresholds
+        if (bThreshWithOpenCV) {
+            grayThreshNear = grayImage;
+            grayThreshFar = grayImage;
+            grayThreshNear.threshold(nearThreshold, true);
+            grayThreshFar.threshold(farThreshold);
+            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
+        }
+        else {
+
+            // or we do it ourselves - show people how they can work with the pixels
+            ofPixels& pix = grayImage.getPixels();
+            int numPixels = pix.size();
+            for (int i = 0; i < numPixels; i++) {
+                if (pix[i] < nearThreshold && pix[i] > farThreshold) {
+                    pix[i] = 255;
+                }
+                else {
+                    pix[i] = 0;
+                }
+            }
+        }
+
+        // update the cv images
+        grayImage.flagImageChanged();
+
+        // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+        // also, find holes is set to true so we will get interior contours as well....
+        contourFinder.findContours(grayImage, 10, (kinect.width * kinect.height) / 2, 20, false);
+    }
 }
 
 //--------------------------------------------------------------
@@ -327,9 +459,27 @@ void ofApp::updateAudioSphere() {
     posBuffer.swap();
 }
 
+void ofApp::updateFlashingText() {
+
+    b_flashingText = false;
+    startingFrameNumber = ofGetFrameNum();
+    flashFrames.clear();
+    for (int i = 0; i < numFlashes; ++i) {
+        int mark = ofRandom(markMax * 60);      // maybe try to use some kind of Poisson distribution here ?
+        int space = ofRandom(spaceMax * 60);    // maybe try to use some kind of Poisson distribution here ?
+        
+        while (mark != 0) {
+            flashFrames.push_back(1);
+            mark--;
+        }
+        while (space != 0) {
+            flashFrames.push_back(0);
+            space--;
+        }
+    }
+}
 
 //======================= DRAW =================================
-
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
     
@@ -337,6 +487,8 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelFFT.draw();
     panelDancingMesh.draw();
     panelAudioSphere.draw();
+    panelFlashingText.draw();
+    panelKinect.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -412,6 +564,26 @@ void ofApp::drawGui(ofEventArgs& args) {
 }
 
 //--------------------------------------------------------------
+void ofApp::drawKinect() {
+
+    ofSetColor(255, 255, 255);
+
+    if (bDrawPointCloud) {
+        cam.begin();
+        drawPointCloud();
+        cam.end();
+    }
+    else {
+        // draw from the live kinect
+        kinect.drawDepth(10, 10, 400, 300);
+        kinect.draw(420, 10, 400, 300);
+
+        grayImage.draw(10, 320, 400, 300);
+        contourFinder.draw(10, 320, 400, 300);
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::drawDancingMesh() {
     ofDisableDepthTest();
     drawDancingMeshPoints();
@@ -474,12 +646,49 @@ void ofApp::drawAudioSphere() {
     shader.setUniform1f("u_fboRes", (float)fboResolution);
 
     vm.drawVertices();
-
     shader.end();
-
     glDisable(GL_POINT_SMOOTH);
 
     //cam.end();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawFlashingText() {
+
+    if (!flashFrames.empty()) {
+
+        std::string text = inputMessage.get();
+
+        if (flashIdx < flashFrames.size() && flashFrames[flashIdx] == 1) {
+
+            ofColor textColor;
+            if (colorRand < 1.0) 
+                textColor.set(ofColor::mediumSeaGreen);     //textColor.setHex(0x51DCAA, 1.0f);
+            else 
+                textColor.set(ofColor::mediumPurple);
+
+            ofSetColor(textColor);
+            eastBorderFont.drawString(text, xshift, yshift);
+        }
+        else {
+            colorRand = ofRandom(2.0);
+            float textWidth = eastBorderFont.stringWidth(text);
+            float textHeight = eastBorderFont.stringHeight(text);
+            xshift = - (textWidth / 2) - (ofRandom(-1.0, 1.0) * (ofGetWidth() - textWidth)) / 10;
+            yshift =  - (ofRandom(-1.0, 1.0) * (ofGetHeight() - textHeight)) / 10;
+        }
+
+        if (flashIdx > flashFrames.size() - 1) {
+            flashFrames.clear();
+            flashIdx = 0;
+            b_audioSphere = true;
+        }
+
+        flashIdx++;
+     
+    }
+    framesLeft = flashFrames.size() - flashIdx;
+
 }
 
 
@@ -500,6 +709,32 @@ void ofApp::analyseFFT() {
     green = static_cast<int>(std::min(ofMap(mids, 0, 6, 0, 255), 255.0f));
     blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
     brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
+}
+
+//--------------------------------------------------------------
+void ofApp::drawPointCloud() {
+    int w = 640;
+    int h = 480;
+    ofMesh mesh;
+    mesh.setMode(OF_PRIMITIVE_POINTS);
+    int step = 2;
+    for (int y = 0; y < h; y += step) {
+        for (int x = 0; x < w; x += step) {
+            if (kinect.getDistanceAt(x, y) > 0) {
+                mesh.addColor(kinect.getColorAt(x, y));
+                mesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+            }
+        }
+    }
+    glPointSize(3);
+    ofPushMatrix();
+    // the projected points are 'upside down' and 'backwards' 
+    ofScale(1, -1, -1);
+    ofTranslate(0, 0, -1000); // center the points a bit
+    ofEnableDepthTest();
+    mesh.drawVertices();
+    ofDisableDepthTest();
+    ofPopMatrix();
 }
 
 //--------------------------------------------------------------
