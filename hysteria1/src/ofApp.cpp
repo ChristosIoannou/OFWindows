@@ -182,7 +182,7 @@ void ofApp::setupGui() {
 
     // AudioSphere
     paramsAudioSphere.setName("Audio Sphere");
-    paramsAudioSphere.add(b_audioSphere.set("Draw AS", true));
+    paramsAudioSphere.add(b_audioSphere.set("Draw AS", false));
     paramsAudioSphere.add(autoRotate.set("Rotate", true));
     paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, -2, 2));
     paramsAudioSphere.add(rotateSin.set("Sin Rotation", false));
@@ -201,7 +201,7 @@ void ofApp::setupGui() {
 
     // Kinect
     paramsKinect.setName("Kinect");
-    paramsKinect.add(b_kinect.set("Do", false));
+    paramsKinect.add(b_kinect.set("Do", true));
     paramsKinect.add(bThreshWithOpenCV.set("Thresh with OpenCV", true));
     paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
     paramsKinect.add(nearThreshold.set("Near thresh", 230, 0, 255));
@@ -713,26 +713,31 @@ void ofApp::analyseFFT() {
 
 //--------------------------------------------------------------
 void ofApp::drawPointCloud() {
+
+    ofSetColor(ofColor::white);
     int w = 640;
     int h = 480;
     ofMesh mesh;
     mesh.setMode(OF_PRIMITIVE_POINTS);
-    int step = 2;
+    mesh.enableIndices();
+    int step = 1;
     for (int y = 0; y < h; y += step) {
         for (int x = 0; x < w; x += step) {
-            if (kinect.getDistanceAt(x, y) > 0) {
-                mesh.addColor(kinect.getColorAt(x, y));
+            if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
+                //mesh.addColor(kinect.getColorAt(x, y));
                 mesh.addVertex(kinect.getWorldCoordinateAt(x, y));
             }
         }
     }
-    glPointSize(3);
+
+    glPointSize(1);
     ofPushMatrix();
     // the projected points are 'upside down' and 'backwards' 
     ofScale(1, -1, -1);
     ofTranslate(0, 0, -1000); // center the points a bit
     ofEnableDepthTest();
-    mesh.drawVertices();
+    //mesh.drawVertices();
+    mesh.draw();
     ofDisableDepthTest();
     ofPopMatrix();
 }
