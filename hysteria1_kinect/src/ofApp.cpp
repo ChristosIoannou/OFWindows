@@ -18,7 +18,7 @@ void ofApp::setup() {
     setupFFT();
     setupKinect();
     setupFlashingText();
-    setupPcExpand();
+    setupKinectPointCloud();
 }
 
 //--------------------------------------------------------------
@@ -36,8 +36,8 @@ void ofApp::update() {
         updateKinect();
     if (b_flashingText)
         updateFlashingText();
-    if (b_pcExpand)
-        updatePcExpand();
+    if (bDrawPointCloud)
+        updateKinectPointCloud();
 
 }
 
@@ -46,17 +46,13 @@ void ofApp::draw() {
 
     ofBackground(ofColor::black);	//Set up the background
 
-    if (b_kinect)
-        drawKinect();
+    if (bDrawPointCloud)
+        drawKinectPointCloud();
 
     ofEnableAlphaBlending();
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
-    //cam.begin();
-
     drawFlashingText();
-
-    //cam.end();
     ofPopMatrix();
 }
 
@@ -186,9 +182,9 @@ void ofApp::setupGui() {
     panelKinect.setup(paramsKinect, "settings.xml", 30, 380);
 
     // Expand point cloud
-    paramsPcExpand.setName("PCL Expand");
-    paramsPcExpand.add(b_pcExpand.set("Do", false));
-    panelPcExpand.setup(paramsPcExpand, "settings.xml", 30, 620);
+    paramsPcExplode.setName("PCL Explode");
+    paramsPcExplode.add(b_pcExplode.set("Do", false));
+    panelPcExplode.setup(paramsPcExplode, "settings.xml", 30, 620);
 
     ofSetBackgroundColor(0);
 }
@@ -221,7 +217,7 @@ void ofApp::setupSoundStream() {
 //--------------------------------------------------------------
 void ofApp::setupKinect() {
 
-    kinect.setRegistration(true);   // enable depth->video image calibration
+    kinect.setRegistration(true);   // enable depth.video image calibration
     kinect.init();  // shows normal RGB video image
     //kinect.init(true); // shows infrared instead of RGB video image
     //kinect.init(false, false); // disable video image (faster fps)
@@ -233,8 +229,7 @@ void ofApp::setupKinect() {
     grayThreshFar.allocate(kinect.width, kinect.height);
     angle = 0;  // zero the tilt on startup
     kinect.setCameraTiltAngle(angle);
-    kinectMesh.setMode(OF_PRIMITIVE_POINTS);
-    kinectPlayMesh.setMode(OF_PRIMITIVE_POINTS);
+
 }
 
 //--------------------------------------------------------------
@@ -270,9 +265,9 @@ void ofApp::setupBeatDetector() {
 }
 
 //--------------------------------------------------------------
-void ofApp::setupPcExpand() {
-    b_pcExpand.addListener(this, &ofApp::transferKinectMeshToPlayMesh);
-    b_pcExpand.addListener(this, &ofApp::remergePlayMeshToKinectMesh);
+void ofApp::setupKinectPointCloud() {
+    kinectPC.setupKinectPointCloud();
+    b_pcExplode.addListener(&kinectPC, &KinectPointCloud::explodeListener);
 }
 
 //==================== UPDATES =================================
@@ -292,57 +287,55 @@ void ofApp::updateBeatDetector() {
 
 //--------------------------------------------------------------
 void ofApp::updateKinect() {
-    //kinect.update();
-    //// there is a new frame and we are connected
-    //if (kinect.isFrameNew()) {
+    kinect.update();
+    // there is a new frame and we are connected
+    if (kinect.isFrameNew()) {
 
-    //    // load grayscale depth image from the kinect source
-    //    grayImage.setFromPixels(kinect.getDepthPixels());
+        // load grayscale depth image from the kinect source
+        grayImage.setFromPixels(kinect.getDepthPixels());
 
-    //    // we do two thresholds - one for the far plane and one for the near plane
-    //    // we then do a cvAnd to get the pixels which are a union of the two thresholds
-    //    if (bThreshWithOpenCV) {
-    //        grayThreshNear = grayImage;
-    //        grayThreshFar = grayImage;
-    //        grayThreshNear.threshold(nearThreshold, true);
-    //        grayThreshFar.threshold(farThreshold);
-    //        cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-    //    }
-    //    else {
+        // we do two thresholds - one for the far plane and one for the near plane
+        // we then do a cvAnd to get the pixels which are a union of the two thresholds
+        if (bThreshWithOpenCV) {
+            grayThreshNear = grayImage;
+            grayThreshFar = grayImage;
+            grayThreshNear.threshold(nearThreshold, true);
+            grayThreshFar.threshold(farThreshold);
+            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
+        }
+        else {
 
-    //        // or we do it ourselves - show people how they can work with the pixels
-    //        ofPixels& pix = grayImage.getPixels();
-    //        int numPixels = pix.size();
-    //        for (int i = 0; i < numPixels; i++) {
-    //            if (pix[i] < nearThreshold && pix[i] > farThreshold) {
-    //                pix[i] = 255;
-    //            }
-    //            else {
-    //                pix[i] = 0;
-    //            }
-    //        }
-    //    }
+            // or we do it ourselves - show people how they can work with the pixels
+            ofPixels& pix = grayImage.getPixels();
+            int numPixels = pix.size();
+            for (int i = 0; i < numPixels; i++) {
+                if (pix[i] < nearThreshold && pix[i] > farThreshold) {
+                    pix[i] = 255;
+                }
+                else {
+                    pix[i] = 0;
+                }
+            }
+        }
 
-    //    // update the cv images
-    //    grayImage.flagImageChanged();
+        // update the cv images
+        grayImage.flagImageChanged();
 
-    //    // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-    //    // also, find holes is set to true so we will get interior contours as well....
-    //    contourFinder.findContours(grayImage, 10, (kinect.width * kinect.height) / 2, 20, false);
-    //    getPointCloud();
-    //}
-    ofSpherePrimitive sphere;
-    sphere.setRadius(200);
-    sphere.setResolution(150);
-    sphere.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, 0);
+        // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+        // also, find holes is set to true so we will get interior contours as well....
+        contourFinder.findContours(grayImage, 10, (kinect.width * kinect.height) / 2, 20, false);
+        getPointCloud();
+    }
+    //ofSpherePrimitive sphere;
+    //sphere.setRadius(200);
+    //sphere.setResolution(150);
+    //sphere.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, 0);
     //kinectPC.setKinectMesh(sphere.getMesh());
-    kinectMesh = sphere.getMesh();
-    //std::cout << kinectMesh.getNumVertices() << std::endl;
+    //kinectPC.kinectMesh = sphere.getMesh();
 }
 
 //-------------------------------------------------------------
 void ofApp::updateFlashingText() {
-
     b_flashingText = false;
     startingFrameNumber = ofGetFrameNum();
     flashFrames.clear();
@@ -362,12 +355,8 @@ void ofApp::updateFlashingText() {
 }
 
 //--------------------------------------------------------------
-void ofApp::updatePcExpand() {
-
-    for (int i = 0; i < kinectPlayMesh.getNumVertices(); ++i) {
-        //kinectPlayMesh.getVertices()[i] = kinectPlayMesh.getVertices()[i] + kinectPlayMesh.getNormal(i) + pcDirections[i];
-        kinectPlayMesh.getVertices()[i] = kinectPlayMesh.getVertices()[i] + pcDirections[i];
-    }
+void ofApp::updateKinectPointCloud() {
+    kinectPC.updateKinectPointCloud();
 }
 
 
@@ -379,7 +368,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelFFT.draw();
     panelFlashingText.draw();
     panelKinect.draw();
-    panelPcExpand.draw();
+    panelPcExplode.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -409,7 +398,7 @@ void ofApp::drawGui(ofEventArgs& args) {
         for (int i = 0; i < bufferSize; i++) {
             float signalValue = abs(fft->getSignal()[i] * 60) < 42 ? fft->getSignal()[i] * 60 : 42;
             ofVertex(i, 60 - signalValue);
-            //std::cout << fft->getSignal()[i] * 60 << std::endl;
+            //std::cout << fft.getSignal()[i] * 60 << std::endl;
         }
         ofEndShape(false);
         ofPopMatrix();
@@ -431,21 +420,31 @@ void ofApp::drawGui(ofEventArgs& args) {
 //--------------------------------------------------------------
 void ofApp::drawKinect() {
 
+    // draw from the live kinect
+    kinect.drawDepth(10, 10, 400, 300);
+    kinect.draw(420, 10, 400, 300);
+
+    grayImage.draw(10, 320, 400, 300);
+    contourFinder.draw(10, 320, 400, 300);
+}
+
+//--------------------------------------------------------------
+void ofApp::drawKinectPointCloud() {
     ofSetColor(255, 255, 255);
-
-    if (bDrawPointCloud) {
-        cam.begin();
-        drawPointCloud();
-        cam.end();
-    }
-    else {
-        // draw from the live kinect
-        kinect.drawDepth(10, 10, 400, 300);
-        kinect.draw(420, 10, 400, 300);
-
-        grayImage.draw(10, 320, 400, 300);
-        contourFinder.draw(10, 320, 400, 300);
-    }
+    cam.begin();
+    ofSetColor(ofColor::white);
+    glPointSize(1);
+    ofPushMatrix();
+    // the projected points are 'upside down' and 'backwards' 
+    ofScale(1, -1, -1);
+    ofTranslate(0, 0, -1000); // center the points a bit
+    ofEnableDepthTest();
+    //mesh.drawVertices();
+    ofSetColor(ofColor::white);
+    kinectPC.drawKinectPointCloud();
+    ofDisableDepthTest();
+    ofPopMatrix();
+    cam.end();
 }
 
 //--------------------------------------------------------------
@@ -507,29 +506,9 @@ void ofApp::analyseFFT() {
 }
 
 //--------------------------------------------------------------
-void ofApp::drawPointCloud() {
-
-    ofSetColor(ofColor::white);
-    glPointSize(1);
-    ofPushMatrix();
-    // the projected points are 'upside down' and 'backwards' 
-    ofScale(1, -1, -1);
-    //ofTranslate(0, 0, -1000); // center the points a bit
-    ofEnableDepthTest();
-    //mesh.drawVertices();
-    ofSetColor(ofColor::white);
-    if (usePlayMesh)
-        kinectPlayMesh.drawVertices();
-    else
-        kinectMesh.drawVertices();
-    ofDisableDepthTest();
-    ofPopMatrix();
-}
-
-//--------------------------------------------------------------
 void ofApp::getPointCloud() {
 
-    kinectMesh.clear();
+    kinectPC.kinectMesh.clear();
     int w = kinect.width;
     int h = kinect.height;
     int step = 1;
@@ -537,28 +516,9 @@ void ofApp::getPointCloud() {
         for (int x = 0; x < w; x += step) {
             if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
                 //mesh.addColor(kinect.getColorAt(x, y));
-                kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                kinectPC.kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
             }
         }
     }
-
-}
-
-//--------------------------------------------------------------
-void ofApp::transferKinectMeshToPlayMesh(bool &b_pcExpand) {
-    usePlayMesh = b_pcExpand;
-    if (usePlayMesh) {
-        pcDirections.clear();
-        kinectPlayMesh = kinectMesh;
-        for (int i = 0; i < kinectPlayMesh.getNumVertices(); ++i) {
-            ofVec3f direction(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
-            pcDirections.push_back(direction);
-        }
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::remergePlayMeshToKinectMesh(bool& b_pcExpand) {
-
 
 }

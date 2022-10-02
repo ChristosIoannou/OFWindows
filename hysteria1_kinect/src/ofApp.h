@@ -37,18 +37,19 @@ public:
     void setupFFT();
     void setupBeatDetector();
     void setupFlashingText();
-    void setupPcExpand();
+    void setupKinectPointCloud();
 
     //--- update ---
     void updateFFTandAnalyse();
     void updateBeatDetector();
     void updateKinect();
     void updateFlashingText();
-    void updatePcExpand();
+    void updateKinectPointCloud();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
     void drawKinect();
+    void drawKinectPointCloud();
     void drawFlashingText();
 
     //--- soundStream ---
@@ -101,13 +102,8 @@ public:
     int xshift, yshift;
 
     //--- kinect ---
-    void drawPointCloud();
-    void transferKinectMeshToPlayMesh(bool& pcExpand);
-    void remergePlayMeshToKinectMesh(bool& pcExpand);
     ofxKinect kinect;
-    KinectPointCloud kinectPC;
-    ofVboMesh kinectMesh;
-    ofVboMesh kinectPlayMesh;
+    KinectPointCloud kinectPC;// (OF_PRIMITIVE_POINTS);
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayImage;
     ofxCvGrayscaleImage grayThreshNear;
@@ -117,11 +113,10 @@ public:
     bool getKinectFrame = true;
     bool usePlayMesh = false;
 
-    //--- pcExpand ---
-    ofParameterGroup paramsPcExpand;
-    ofxPanel panelPcExpand;
-    ofParameter<bool> b_pcExpand;
-    std::vector<ofVec3f> pcDirections;
+    //--- pcExplode ---
+    ofParameterGroup paramsPcExplode;
+    ofxPanel panelPcExplode;
+    ofParameter<bool> b_pcExplode;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
