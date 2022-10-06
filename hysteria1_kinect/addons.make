@@ -1,4 +1,0 @@
-ofxFft
-ofxGui
-ofxKinect
-ofxOpenCv
