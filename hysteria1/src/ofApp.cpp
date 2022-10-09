@@ -15,6 +15,7 @@ void ofApp::setup() {
     setupAudioSphere();
     setupFlashingText();
     setupKinectPointCloud();
+    setupParticleRiver();
 }
 
 //--------------------------------------------------------------
@@ -30,6 +31,8 @@ void ofApp::update() {
         updateKinectPointCloud();
     if (b_audioSphere)
         updateAudioSphere();
+    if (b_particleRiver)
+        updateParticleRiver();
 
 }
 
@@ -52,6 +55,9 @@ void ofApp::draw() {
         drawAudioSphere();
 
     ofPopMatrix();
+    ofDisableDepthTest();
+    if (b_particleRiver)
+        drawParticleRiver();
 }
 
 //--------------------------------------------------------------
@@ -59,6 +65,7 @@ void ofApp::exit() {
     soundStream.close();
     kinect.setCameraTiltAngle(0); // zero the tilt on exit
     kinect.close();
+    particleRiver.exit();
 }
 
 //--------------------------------------------------------------
@@ -68,6 +75,8 @@ void ofApp::keyPressed(int key) {
     case 'F':
     case 'f':
         ofToggleFullscreen();
+        if (b_particleRiver)
+            particleRiver.resize();
         break;
     case OF_KEY_UP:
         angle++;
@@ -78,6 +87,84 @@ void ofApp::keyPressed(int key) {
         angle--;
         if (angle < -30) angle = -30;
         kinect.setCameraTiltAngle(angle);
+        break;
+    case 'm':
+        particleRiver.drawMap = !particleRiver.drawMap;
+        break;
+    case 'p':
+        particleRiver.drawParts = !particleRiver.drawParts;
+        break;
+    case '=':
+        particleRiver.spread += 1.0;
+        printf("spread: %.2f\n", particleRiver.spread);
+        break;
+    case '-':
+        if (particleRiver.spread >= 1.0)
+            particleRiver.spread -= 1.0;
+        printf("spread: %.2f\n", particleRiver.spread);
+        break;
+    case '[':
+        if (particleRiver.circ_coeff >= 0.01) {
+            particleRiver.circ_coeff -= 0.01;
+            printf("circ coeff %.2f\n", particleRiver.circ_coeff);
+        }
+        break;
+    case ']':
+        particleRiver.circ_coeff += 0.01;
+        printf("circ coeff %.2f\n", particleRiver.circ_coeff);
+        break;
+    case 'v':
+        particleRiver.vsync = !particleRiver.vsync;
+        ofSetVerticalSync(particleRiver.vsync);
+        cout << "Vsync: " << ofToString(particleRiver.vsync) << endl;
+        break;
+    case 'c':
+        particleRiver.drawMode = DrawCos;
+        particleRiver.output = false;
+        break;
+    case 's':
+        particleRiver.drawMode = DrawSin;
+        particleRiver.output = false;
+        break;
+    case 'x':
+        particleRiver.drawMode = DrawMap;
+        break;
+    case 'r':
+        particleRiver.initParts();
+        break;
+    case ',':
+        if (particleRiver.samp_coeff > particleRiver.samp_var) {
+            particleRiver.samp_coeff -= particleRiver.samp_var;
+            particleRiver.buildNoise();
+        }
+        break;
+    case '.':
+        particleRiver.samp_coeff += particleRiver.samp_var;
+        particleRiver.buildNoise();
+        break;
+    case 'y':
+        if (particleRiver.speed > 0.5f) particleRiver.speed -= 0.5f;
+        printf("speed: %.1f\n", particleRiver.speed);
+        break;
+    case 'u':
+        particleRiver.speed += 0.5f;
+        printf("speed: %.1f\n", particleRiver.speed);
+        break;
+    case '1':
+        particleRiver.spread = 1.0;
+        break;
+    case '2':
+        particleRiver.spread = 2.0;
+        break;
+    case '3':
+        particleRiver.spread = 3.0;
+        break;
+    case '8':
+        particleRiver.speed = 1.5;
+        particleRiver.spread = 8.0;
+        break;
+    case '0':
+        particleRiver.spread = 10.0;
         break;
     }
 }
@@ -175,11 +262,11 @@ void ofApp::setupGui() {
     paramsFlashingText.add(spaceMax.set("Space (s)", 1.2, 0, 1.5));
     paramsFlashingText.add(numFlashes.set("Number of flashes", 10, 0, 20));
     paramsFlashingText.add(framesLeft.set("Frames Left", 0, 0, 1200));
-    panelFlashingText.setup(paramsFlashingText, "settings.xml", 490, 270);
+    panelFlashingText.setup(paramsFlashingText, "settings.xml", 490, 300);
 
     // Kinect
     paramsKinect.setName("Kinect");
-    paramsKinect.add(b_kinect.set("Do", true));
+    paramsKinect.add(b_kinect.set("Do", false));
     paramsKinect.add(bThreshWithOpenCV.set("Thresh with OpenCV", true));
     paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
     paramsKinect.add(nearThreshold.set("Near thresh", 230, 0, 255));
@@ -193,6 +280,18 @@ void ofApp::setupGui() {
     paramsPcExplode.add(b_pcSparkle.set("Sparkle", false));
     paramsPcExplode.add(b_pcRotate.set("Rotate", false));
     panelPcExplode.setup(paramsPcExplode, "settings.xml", 30, 620);
+
+    // ParticleRiver
+    paramsParticleRiver.setName("Particle River");
+    paramsParticleRiver.add(b_particleRiver.set("Do", true));
+    paramsParticleRiver.add(particleRiver.drawMap.set("Draw Map", false));
+    paramsParticleRiver.add(particleRiver.spread.set("Spread", 1.0f, 0.0f, 20.0f));
+    paramsParticleRiver.add(particleRiver.speed.set("Speed", 2.5f, 0.0f, 20.0f));
+    paramsParticleRiver.add(particleRiver.circ_coeff.set("Circle Coefficient", 0.01f, 0.0f, 0.5f));    
+    paramsParticleRiver.add(particleRiver.spreadSin.set("Spread Sin", false));
+    paramsParticleRiver.add(particleRiver.speedSin.set("Speed Sin", false));
+    paramsParticleRiver.add(particleRiver.circ_coeffSin.set("Circ Coeff Sin", false));
+    panelParticleRiver.setup(paramsParticleRiver, "settings.xml", 260, 270);
 
     ofSetBackgroundColor(0);
 }
@@ -285,6 +384,9 @@ void ofApp::setupBeatDetector() {
     beatDetector.clear();
 }
 
+void ofApp::setupParticleRiver() {
+    particleRiver.setup();
+}
 
 //==================== UPDATES =================================
 //--------------------------------------------------------------
@@ -385,6 +487,10 @@ void ofApp::updateFlashingText() {
     }
 }
 
+void ofApp::updateParticleRiver() {
+    particleRiver.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -395,6 +501,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelFlashingText.draw();
     panelKinect.draw();
     panelPcExplode.draw();
+    panelParticleRiver.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -519,6 +626,9 @@ void ofApp::drawFlashingText() {
 
 }
 
+void ofApp::drawParticleRiver() {
+    particleRiver.draw();
+}
 
 //==================== HELPERS =================================
 //--------------------------------------------------------------

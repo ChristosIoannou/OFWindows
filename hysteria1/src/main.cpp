@@ -9,6 +9,9 @@ int main( ){
 	settings.setSize(1024, 768);
 	settings.setPosition(glm::vec2(550, 300));
 	settings.resizable = true;
+	settings.glVersionMajor = 2;
+	settings.glVersionMinor = 1;
+	settings.windowMode = OF_WINDOW;
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
 	settings.setSize(750, 750);

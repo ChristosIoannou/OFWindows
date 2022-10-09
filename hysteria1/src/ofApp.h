@@ -8,6 +8,7 @@
 #include "ofxKinect.h"
 #include "KinectPointCloud.h"
 #include "AudioSphere.h"
+#include "ParticleRiver.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -36,6 +37,7 @@ public:
     void setupAudioSphere();
     void setupFlashingText();
     void setupKinectPointCloud();
+    void setupParticleRiver();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -44,6 +46,7 @@ public:
     void updateAudioSphere();
     void updateFlashingText();
     void updateKinectPointCloud();
+    void updateParticleRiver();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -51,6 +54,7 @@ public:
     void drawAudioSphere();
     void drawFlashingText();
     void drawKinectPointCloud();
+    void drawParticleRiver();
 
     //--- soundStream ---
     ofSoundStream soundStream;
@@ -81,6 +85,20 @@ public:
 
     //--- audioSphere ---
     AudioSphere audioSphere;
+    ofParameterGroup paramsAudioSphere;
+    ofxPanel panelAudioSphere;
+    ofParameter<bool> b_audioSphere;
+    ofParameter<bool> autoRotate;
+    ofParameter<float> rotationSpeed;
+    ofParameter<bool> rotateSin;
+    ofParameter<float> posDecayRate; // = 0.996f; // 0.995f
+
+    //--- ParticleRiver ---
+    ParticleRiver particleRiver;
+    ofParameterGroup paramsParticleRiver;
+    ofxPanel panelParticleRiver;
+    ofParameter<bool> b_particleRiver;
+    //ofParameter<bool> b_particleRiverDrawMap;
 
     //--- time ---
     float time0 = 0;		//Time value, used for dt computing
@@ -135,14 +153,6 @@ public:
     ofParameterGroup paramsFFT;
     ofxPanel panelFFT;
     ofParameter<float> volumeMultiplier;
-
-    ofParameterGroup paramsAudioSphere;
-    ofxPanel panelAudioSphere;
-    ofParameter<bool> b_audioSphere;
-    ofParameter<bool> autoRotate;
-    ofParameter<float> rotationSpeed;
-    ofParameter<bool> rotateSin;
-    ofParameter<float> posDecayRate; // = 0.996f; // 0.995f
 
     ofParameterGroup paramsKinect;
     ofxPanel panelKinect;
