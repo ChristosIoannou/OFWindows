@@ -2,13 +2,13 @@
 
 #include "ofMain.h"
 #include "ofxFft.h"
-#include "ofxOpenCv.h"
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 #include "ofxKinect.h"
 #include "KinectPointCloud.h"
 #include "AudioSphere.h"
 #include "ParticleRiver.h"
+#include "KinectContour.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -38,6 +38,7 @@ public:
     void setupFlashingText();
     void setupKinectPointCloud();
     void setupParticleRiver();
+    void setupKinectContour();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -47,6 +48,7 @@ public:
     void updateFlashingText();
     void updateKinectPointCloud();
     void updateParticleRiver();
+    void updateKinectContour();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -55,6 +57,7 @@ public:
     void drawFlashingText();
     void drawKinectPointCloud();
     void drawParticleRiver();
+    void drawKinectContour();
 
     //--- soundStream ---
     ofSoundStream soundStream;
@@ -125,11 +128,6 @@ public:
     //--- kinect ---
     ofxKinect kinect;
     KinectPointCloud kinectPC;// (OF_PRIMITIVE_POINTS);
-    ofxCvColorImage colorImg;
-    ofxCvGrayscaleImage grayImage;
-    ofxCvGrayscaleImage grayThreshNear;
-    ofxCvGrayscaleImage grayThreshFar;
-    ofxCvContourFinder contourFinder;
     int angle;
     bool getKinectFrame = true;
     bool usePlayMesh = false;
@@ -142,6 +140,12 @@ public:
     ofParameter<bool> b_pcExplode;
     ofParameter<bool> b_pcSparkle;
     ofParameter<bool> b_pcRotate;
+
+    //--- KinectContour ---
+    KinectContour kinectContour = KinectContour(kinect);
+    ofParameterGroup paramsKinectContour;
+    ofxPanel panelKinectContour;
+    ofParameter<bool> b_kinectContour;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
@@ -158,7 +162,5 @@ public:
     ofxPanel panelKinect;
     ofParameter<bool> b_kinect;
     ofParameter<bool> bDrawPointCloud;
-    ofParameter<bool> bThreshWithOpenCV;
-    ofParameter<int> nearThreshold;
-    ofParameter<int> farThreshold;
+
 };

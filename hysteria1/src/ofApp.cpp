@@ -16,6 +16,7 @@ void ofApp::setup() {
     setupFlashingText();
     setupKinectPointCloud();
     setupParticleRiver();
+    setupKinectContour();
 }
 
 //--------------------------------------------------------------
@@ -33,6 +34,8 @@ void ofApp::update() {
         updateAudioSphere();
     if (b_particleRiver)
         updateParticleRiver();
+    if (b_kinectContour)
+        updateKinectContour();
 
 }
 
@@ -53,11 +56,19 @@ void ofApp::draw() {
         drawKinectPointCloud();
     if (b_audioSphere)
         drawAudioSphere();
+    
+    if (b_kinectContour) {
+        ofPushMatrix();
+        ofScale(-1, 1, 1);
+        drawKinectContour();
+        ofPopMatrix();
+    }
 
     ofPopMatrix();
     ofDisableDepthTest();
     if (b_particleRiver)
         drawParticleRiver();
+
 }
 
 //--------------------------------------------------------------
@@ -93,62 +104,6 @@ void ofApp::keyPressed(int key) {
         break;
     case 'p':
         particleRiver.drawParts = !particleRiver.drawParts;
-        break;
-    case '=':
-        particleRiver.spread += 1.0;
-        printf("spread: %.2f\n", particleRiver.spread);
-        break;
-    case '-':
-        if (particleRiver.spread >= 1.0)
-            particleRiver.spread -= 1.0;
-        printf("spread: %.2f\n", particleRiver.spread);
-        break;
-    case '[':
-        if (particleRiver.circ_coeff >= 0.01) {
-            particleRiver.circ_coeff -= 0.01;
-            printf("circ coeff %.2f\n", particleRiver.circ_coeff);
-        }
-        break;
-    case ']':
-        particleRiver.circ_coeff += 0.01;
-        printf("circ coeff %.2f\n", particleRiver.circ_coeff);
-        break;
-    case 'v':
-        particleRiver.vsync = !particleRiver.vsync;
-        ofSetVerticalSync(particleRiver.vsync);
-        cout << "Vsync: " << ofToString(particleRiver.vsync) << endl;
-        break;
-    case 'c':
-        particleRiver.drawMode = DrawCos;
-        particleRiver.output = false;
-        break;
-    case 's':
-        particleRiver.drawMode = DrawSin;
-        particleRiver.output = false;
-        break;
-    case 'x':
-        particleRiver.drawMode = DrawMap;
-        break;
-    case 'r':
-        particleRiver.initParts();
-        break;
-    case ',':
-        if (particleRiver.samp_coeff > particleRiver.samp_var) {
-            particleRiver.samp_coeff -= particleRiver.samp_var;
-            particleRiver.buildNoise();
-        }
-        break;
-    case '.':
-        particleRiver.samp_coeff += particleRiver.samp_var;
-        particleRiver.buildNoise();
-        break;
-    case 'y':
-        if (particleRiver.speed > 0.5f) particleRiver.speed -= 0.5f;
-        printf("speed: %.1f\n", particleRiver.speed);
-        break;
-    case 'u':
-        particleRiver.speed += 0.5f;
-        printf("speed: %.1f\n", particleRiver.speed);
         break;
     case '1':
         particleRiver.spread = 1.0;
@@ -267,14 +222,13 @@ void ofApp::setupGui() {
     // Kinect
     paramsKinect.setName("Kinect");
     paramsKinect.add(b_kinect.set("Do", false));
-    paramsKinect.add(bThreshWithOpenCV.set("Thresh with OpenCV", true));
-    paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
-    paramsKinect.add(nearThreshold.set("Near thresh", 230, 0, 255));
-    paramsKinect.add(farThreshold.set("Far thresh", 70, 0, 255));
+    paramsKinect.add(kinectContour.nearThreshold.set("Near thresh", 230, 0, 255));
+    paramsKinect.add(kinectContour.farThreshold.set("Far thresh", 210, 0, 255));
     panelKinect.setup(paramsKinect, "settings.xml", 30, 380);
 
     // Expand point cloud
     paramsPcExplode.setName("PCL Explode");
+    paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
     paramsPcExplode.add(b_pcExplode.set("Explode", false));
     paramsPcExplode.add(b_pcRemerge.set("Remerge", false));
     paramsPcExplode.add(b_pcSparkle.set("Sparkle", false));
@@ -292,6 +246,14 @@ void ofApp::setupGui() {
     paramsParticleRiver.add(particleRiver.speedSin.set("Speed Sin", false));
     paramsParticleRiver.add(particleRiver.circ_coeffSin.set("Circ Coeff Sin", false));
     panelParticleRiver.setup(paramsParticleRiver, "settings.xml", 260, 270);
+
+    // KinectContour
+    paramsKinectContour.setName("Kinect Contour");
+    paramsKinectContour.add(b_kinectContour.set("Do", true));
+    paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", false));
+    paramsKinectContour.add(kinectContour.nContours.set("Num Contours", 5, 0, 10));
+    paramsKinectContour.add(kinectContour.sizeRatio.set("Size Ratio", 0.7, 0, 2));
+    panelKinectContour.setup(paramsKinectContour, "settings.xml", 490, 500);
 
     ofSetBackgroundColor(0);
 }
@@ -328,12 +290,8 @@ void ofApp::setupKinect() {
     kinect.init();  // shows normal RGB video image
     //kinect.init(true); // shows infrared instead of RGB video image
     //kinect.init(false, false); // disable video image (faster fps)
-
     kinect.open();
-    colorImg.allocate(kinect.width, kinect.height);
-    grayImage.allocate(kinect.width, kinect.height);
-    grayThreshNear.allocate(kinect.width, kinect.height);
-    grayThreshFar.allocate(kinect.width, kinect.height);
+
     angle = 0;  // zero the tilt on startup
     kinect.setCameraTiltAngle(angle);
 }
@@ -388,6 +346,10 @@ void ofApp::setupParticleRiver() {
     particleRiver.setup();
 }
 
+void ofApp::setupKinectContour() {
+    kinectContour.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -407,44 +369,7 @@ void ofApp::updateBeatDetector() {
 void ofApp::updateKinect() {
     kinect.update();
     // there is a new frame and we are connected
-    if (kinect.isFrameNew()) {
 
-        // load grayscale depth image from the kinect source
-        grayImage.setFromPixels(kinect.getDepthPixels());
-
-        // we do two thresholds - one for the far plane and one for the near plane
-        // we then do a cvAnd to get the pixels which are a union of the two thresholds
-        if (bThreshWithOpenCV) {
-            grayThreshNear = grayImage;
-            grayThreshFar = grayImage;
-            grayThreshNear.threshold(nearThreshold, true);
-            grayThreshFar.threshold(farThreshold);
-            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-        }
-        else {
-
-            // or we do it ourselves - show people how they can work with the pixels
-            ofPixels& pix = grayImage.getPixels();
-            int numPixels = pix.size();
-            for (int i = 0; i < numPixels; i++) {
-                if (pix[i] < nearThreshold && pix[i] > farThreshold) {
-                    pix[i] = 255;
-                }
-                else {
-                    pix[i] = 0;
-                }
-            }
-        }
-
-        // update the cv images
-        grayImage.flagImageChanged();
-
-        // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-        // also, find holes is set to true so we will get interior contours as well....
-        contourFinder.findContours(grayImage, 10, (kinect.width * kinect.height) / 2, 20, false);
-        //getPointCloud();
-        kinectPC.getNewFrame(kinect);
-    }
     //ofSpherePrimitive sphere;
     //sphere.setRadius(200);
     //sphere.setResolution(150);
@@ -455,6 +380,9 @@ void ofApp::updateKinect() {
 
 //--------------------------------------------------------------
 void ofApp::updateKinectPointCloud() {
+    if (kinect.isFrameNew()) 
+        kinectPC.getNewFrame(kinect);
+
     if (b_pcRemerge) {
         b_pcExplode = false;
     }
@@ -491,6 +419,9 @@ void ofApp::updateParticleRiver() {
     particleRiver.update();
 }
 
+void ofApp::updateKinectContour() {
+    kinectContour.update();
+}
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -502,6 +433,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelKinect.draw();
     panelPcExplode.draw();
     panelParticleRiver.draw();
+    panelKinectContour.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -569,11 +501,9 @@ void ofApp::drawGui(ofEventArgs& args) {
 void ofApp::drawKinect() {
 
     // draw from the live kinect
-    kinect.drawDepth(10, 10, 400, 300);
-    kinect.draw(420, 10, 400, 300);
+    //kinect.drawDepth(10, 10, 400, 300);
+    //kinect.draw(420, 10, 400, 300);
 
-    grayImage.draw(10, 320, 400, 300);
-    contourFinder.draw(10, 320, 400, 300);
 }
 
 //--------------------------------------------------------------
@@ -630,6 +560,10 @@ void ofApp::drawParticleRiver() {
     particleRiver.draw();
 }
 
+void ofApp::drawKinectContour() {
+    kinectContour.draw(spectrum[1]);
+}
+
 //==================== HELPERS =================================
 //--------------------------------------------------------------
 void ofApp::analyseFFT() {
@@ -648,7 +582,6 @@ void ofApp::analyseFFT() {
     blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
     brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
 }
-
 
 void ofApp::remergeListener(bool& b_pcRemerge_) {
     if (b_pcRemerge_)
