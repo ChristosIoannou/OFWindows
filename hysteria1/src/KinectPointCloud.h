@@ -12,11 +12,18 @@ class KinectPointCloud {
 
 public:
 
+	KinectPointCloud(ofxKinect& kinect_)
+		: kinect(kinect_) {}
+
 	//KinectPointCloud();
-	void setupKinectPointCloud();
-	void updateKinectPointCloud();
-	void drawKinectPointCloud(ofEasyCam& cam);
-	void getNewFrame(ofxKinect& kinect_);
+	void setup();
+	void update();
+	void draw(ofEasyCam& cam);
+	void getNewFrame();
+
+	void getFullFrame(int step, int shift);
+	void getReducedFrame();
+	void drawTrapped();
 
 	void setKinectMesh(ofMesh mesh);
 	void setPlayMesh(ofMesh mesh);
@@ -30,15 +37,27 @@ public:
 	void explodeListener(bool& b_pcExpand);
 	void rotateListener(bool& b_pcRotate);
 
+	ofxKinect& kinect;
 	ofMesh kinectMesh;
 	ofMesh playMesh;
 	std::vector<ofVec3f> explodeDirections;
 	ofVec3f centroid;
 	bool usePlayMesh = false;
-	bool b_explode = false;
-	bool b_remerge = false;
-	bool b_rotate = false;
 	bool freezeKinectMesh = false;
-	bool sparkle = false;
 	float startOffsetAngle = 0.0f;
+
+	ofParameter<bool> b_remerge;
+	ofParameter<bool> b_explode;
+	ofParameter<bool> b_rotate;
+	ofParameter<bool> b_shimmer;
+	ofParameter<bool> b_trapped;
+	ofParameter<int> lightPosX;
+	ofParameter<int> lightPosY;
+	ofParameter<int> lightPosZ;
+	ofParameter<int> lightOriX;
+	ofParameter<int> lightOriY;
+	ofParameter<int> lightOriZ;
+
+	ofMaterial material;
+	ofLight light;
 };

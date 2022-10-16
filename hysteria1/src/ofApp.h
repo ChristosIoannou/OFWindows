@@ -9,6 +9,7 @@
 #include "AudioSphere.h"
 #include "ParticleRiver.h"
 #include "KinectContour.h"
+#include "Tunnel.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -39,6 +40,7 @@ public:
     void setupKinectPointCloud();
     void setupParticleRiver();
     void setupKinectContour();
+    void setupTunnel();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -49,6 +51,7 @@ public:
     void updateKinectPointCloud();
     void updateParticleRiver();
     void updateKinectContour();
+    void updateTunnel();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -58,6 +61,7 @@ public:
     void drawKinectPointCloud();
     void drawParticleRiver();
     void drawKinectContour();
+    void drawTunnel();
 
     //--- soundStream ---
     ofSoundStream soundStream;
@@ -127,25 +131,24 @@ public:
 
     //--- kinect ---
     ofxKinect kinect;
-    KinectPointCloud kinectPC;// (OF_PRIMITIVE_POINTS);
     int angle;
     bool getKinectFrame = true;
     bool usePlayMesh = false;
 
     //--- KinectPointCloud ---
-    void remergeListener(bool& b_pcRemerge);
-    ofParameterGroup paramsPcExplode;
-    ofxPanel panelPcExplode;
-    ofParameter<bool> b_pcRemerge;
-    ofParameter<bool> b_pcExplode;
-    ofParameter<bool> b_pcSparkle;
-    ofParameter<bool> b_pcRotate;
+    KinectPointCloud kinectPointCloud = KinectPointCloud(kinect);
+    ofParameterGroup paramsKinectPointCloud;
+    ofxPanel panelKinectPointCloud;
+
 
     //--- KinectContour ---
     KinectContour kinectContour = KinectContour(kinect);
     ofParameterGroup paramsKinectContour;
     ofxPanel panelKinectContour;
     ofParameter<bool> b_kinectContour;
+
+    //--- Tunnel ---
+    Tunnel tunnel;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
@@ -162,5 +165,9 @@ public:
     ofxPanel panelKinect;
     ofParameter<bool> b_kinect;
     ofParameter<bool> bDrawPointCloud;
+
+    ofParameterGroup paramsTunnel;
+    ofxPanel panelTunnel;
+    ofParameter<bool> b_tunnel;
 
 };
