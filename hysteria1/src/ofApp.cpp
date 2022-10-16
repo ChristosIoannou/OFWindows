@@ -9,6 +9,7 @@ void ofApp::setup() {
     ofSetFrameRate(-1);
     glPointSize(1.0);
 
+    doController.setup();
     setupSoundStream();
     setupFFT();
     setupKinect();
@@ -25,19 +26,19 @@ void ofApp::update() {
 
     updateFFTandAnalyse();
 
-    if (b_kinect)
+    if (doController.b_kinect)
         updateKinect();
-    if (b_flashingText)
+    if (doController.b_flashingText)
         updateFlashingText();
-    if (bDrawPointCloud)
+    if (doController.b_kinectPointCloud)
         updateKinectPointCloud();
-    if (b_audioSphere)
+    if (doController.b_audioSphere)
         updateAudioSphere();
-    if (b_particleRiver)
+    if (doController.b_particleRiver)
         updateParticleRiver();
-    if (b_kinectContour)
+    if (doController.b_kinectContour)
         updateKinectContour();
-    if (b_tunnel)
+    if (doController.b_tunnel)
         updateTunnel();
 
 }
@@ -55,12 +56,12 @@ void ofApp::draw() {
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
     drawFlashingText();
-    if (bDrawPointCloud)
+    if (doController.b_kinectPointCloud)
         drawKinectPointCloud();
-    if (b_audioSphere)
+    if (doController.b_audioSphere)
         drawAudioSphere();
     
-    if (b_kinectContour) {
+    if (doController.b_kinectContour) {
         ofPushMatrix();
         ofScale(-1, 1, 1);
         drawKinectContour();
@@ -70,10 +71,10 @@ void ofApp::draw() {
 
     ofPopMatrix();
     ofDisableDepthTest();
-    if (b_particleRiver)
+    if (doController.b_particleRiver)
         drawParticleRiver();
 
-    if (b_tunnel)
+    if (doController.b_tunnel)
         drawTunnel();
 
 }
@@ -93,9 +94,9 @@ void ofApp::keyPressed(int key) {
     case 'F':
     case 'f':
         ofToggleFullscreen();
-        if (b_particleRiver)
+        if (doController.b_particleRiver)
             particleRiver.resize();
-        if (b_tunnel)
+        if (doController.b_tunnel)
             tunnel.resize();
         break;
     case OF_KEY_UP:
@@ -211,7 +212,7 @@ void ofApp::setupGui() {
 
     // AudioSphere
     paramsAudioSphere.setName("Audio Sphere");
-    paramsAudioSphere.add(b_audioSphere.set("Draw AS", false));
+    paramsAudioSphere.add(doController.b_audioSphere.set("Draw AS", false));
     paramsAudioSphere.add(autoRotate.set("Rotate", true));
     paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, -2, 2));
     paramsAudioSphere.add(rotateSin.set("Sin Rotation", false));
@@ -220,7 +221,7 @@ void ofApp::setupGui() {
 
     // FlashingText
     paramsFlashingText.setName("Flashing Text");
-    paramsFlashingText.add(b_flashingText.set("Draw FT", false));
+    paramsFlashingText.add(doController.b_flashingText.set("Draw FT", false));
     paramsFlashingText.add(inputMessage.set("Message", "THE QUEEN IS DEAD"));
     paramsFlashingText.add(markMax.set("Mark (s)", 0.25, 0, 1));
     paramsFlashingText.add(spaceMax.set("Space (s)", 1.2, 0, 1.5));
@@ -230,14 +231,14 @@ void ofApp::setupGui() {
 
     // Kinect
     paramsKinect.setName("Kinect");
-    paramsKinect.add(b_kinect.set("Do", false));
+    paramsKinect.add(doController.b_kinect.set("Do", false));
     paramsKinect.add(kinectContour.nearThreshold.set("Near thresh", 230, 0, 255));
     paramsKinect.add(kinectContour.farThreshold.set("Far thresh", 210, 0, 255));
     panelKinect.setup(paramsKinect, "settings.xml", 30, 320);
 
     // Expand point cloud
     paramsKinectPointCloud.setName("PCL Explode");
-    paramsKinectPointCloud.add(bDrawPointCloud.set("PointCloud", false));
+    paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("PointCloud", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_rotate.set("Rotate", false));
@@ -253,7 +254,7 @@ void ofApp::setupGui() {
 
     // ParticleRiver
     paramsParticleRiver.setName("Particle River");
-    paramsParticleRiver.add(b_particleRiver.set("Do", true));
+    paramsParticleRiver.add(doController.b_particleRiver.set("Do", false));
     paramsParticleRiver.add(particleRiver.drawMap.set("Draw Map", false));
     paramsParticleRiver.add(particleRiver.spread.set("Spread", 1.0f, 0.0f, 20.0f));
     paramsParticleRiver.add(particleRiver.speed.set("Speed", 2.5f, 0.0f, 20.0f));
@@ -265,7 +266,7 @@ void ofApp::setupGui() {
 
     // KinectContour
     paramsKinectContour.setName("Kinect Contour");
-    paramsKinectContour.add(b_kinectContour.set("Do", true));
+    paramsKinectContour.add(doController.b_kinectContour.set("Do", false));
     paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", false));
     paramsKinectContour.add(kinectContour.nContours.set("Num Contours", 5, 0, 10));
     paramsKinectContour.add(kinectContour.sizeRatio.set("Size Ratio", 0.7, 0, 2));
@@ -273,7 +274,7 @@ void ofApp::setupGui() {
 
     // Tunnel
     paramsTunnel.setName("Tunnel");
-    paramsTunnel.add(b_tunnel.set("Do", true));
+    paramsTunnel.add(doController.b_tunnel.set("Do", false));
     paramsTunnel.add(tunnel.timeScale.set("Timescale", 100.0, 0, 1));
     paramsTunnel.add(tunnel.clearAlpha.set("Clear Alpha", 0.5, 0, 1));
     panelTunnel.setup(paramsTunnel, "settings.xml", 260, 465);
@@ -413,7 +414,7 @@ void ofApp::updateAudioSphere() {
 
 void ofApp::updateFlashingText() {
 
-    b_flashingText = false;
+    doController.b_flashingText = false;
     startingFrameNumber = ofGetFrameNum();
     flashFrames.clear();
     for (int i = 0; i < numFlashes; ++i) {
@@ -568,7 +569,7 @@ void ofApp::drawFlashingText() {
         if (flashIdx > flashFrames.size() - 1) {
             flashFrames.clear();
             flashIdx = 0;
-            b_audioSphere = true;
+            doController.b_audioSphere = true;
         }
 
         flashIdx++;

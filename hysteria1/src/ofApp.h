@@ -10,6 +10,7 @@
 #include "ParticleRiver.h"
 #include "KinectContour.h"
 #include "Tunnel.h"
+#include "DoController.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -63,6 +64,9 @@ public:
     void drawKinectContour();
     void drawTunnel();
 
+    //--- DoController ---
+    DoController doController;
+
     //--- soundStream ---
     ofSoundStream soundStream;
     const int sampleRate = FREQ_MAX;
@@ -94,7 +98,6 @@ public:
     AudioSphere audioSphere;
     ofParameterGroup paramsAudioSphere;
     ofxPanel panelAudioSphere;
-    ofParameter<bool> b_audioSphere;
     ofParameter<bool> autoRotate;
     ofParameter<float> rotationSpeed;
     ofParameter<bool> rotateSin;
@@ -104,7 +107,6 @@ public:
     ParticleRiver particleRiver;
     ofParameterGroup paramsParticleRiver;
     ofxPanel panelParticleRiver;
-    ofParameter<bool> b_particleRiver;
     //ofParameter<bool> b_particleRiverDrawMap;
 
     //--- time ---
@@ -117,7 +119,6 @@ public:
     ofParameterGroup paramsFlashingText;
     ofxPanel panelFlashingText;
     ofParameter<std::string> inputMessage;
-    ofParameter<bool> b_flashingText;
     ofParameter<float> markMax;            // max on time (s)
     ofParameter<float> spaceMax;         // max off time (s)
     ofParameter<int> framesLeft;    // (s)
@@ -140,15 +141,16 @@ public:
     ofParameterGroup paramsKinectPointCloud;
     ofxPanel panelKinectPointCloud;
 
-
     //--- KinectContour ---
     KinectContour kinectContour = KinectContour(kinect);
     ofParameterGroup paramsKinectContour;
     ofxPanel panelKinectContour;
-    ofParameter<bool> b_kinectContour;
 
     //--- Tunnel ---
     Tunnel tunnel;
+    ofParameterGroup paramsTunnel;
+    ofxPanel panelTunnel;
+    //ofParameter<bool> b_tunnel;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
@@ -163,11 +165,9 @@ public:
 
     ofParameterGroup paramsKinect;
     ofxPanel panelKinect;
-    ofParameter<bool> b_kinect;
-    ofParameter<bool> bDrawPointCloud;
+    //ofParameter<bool> b_kinect;
+    //ofParameter<bool> b_kinectPointCloud;
 
-    ofParameterGroup paramsTunnel;
-    ofxPanel panelTunnel;
-    ofParameter<bool> b_tunnel;
+    
 
 };
