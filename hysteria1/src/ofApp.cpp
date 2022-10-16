@@ -9,6 +9,7 @@ void ofApp::setup() {
     ofSetFrameRate(-1);
     glPointSize(1.0);
 
+    doController.setup();
     setupSoundStream();
     setupFFT();
     setupKinect();
@@ -17,6 +18,7 @@ void ofApp::setup() {
     setupKinectPointCloud();
     setupParticleRiver();
     setupKinectContour();
+    setupTunnel();
 }
 
 //--------------------------------------------------------------
@@ -24,18 +26,20 @@ void ofApp::update() {
 
     updateFFTandAnalyse();
 
-    if (b_kinect)
+    if (doController.b_kinect)
         updateKinect();
-    if (b_flashingText)
+    if (doController.b_flashingText)
         updateFlashingText();
-    if (bDrawPointCloud)
+    if (doController.b_kinectPointCloud)
         updateKinectPointCloud();
-    if (b_audioSphere)
+    if (doController.b_audioSphere)
         updateAudioSphere();
-    if (b_particleRiver)
+    if (doController.b_particleRiver)
         updateParticleRiver();
-    if (b_kinectContour)
+    if (doController.b_kinectContour)
         updateKinectContour();
+    if (doController.b_tunnel)
+        updateTunnel();
 
 }
 
@@ -52,22 +56,26 @@ void ofApp::draw() {
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
     drawFlashingText();
-    if (bDrawPointCloud)
+    if (doController.b_kinectPointCloud)
         drawKinectPointCloud();
-    if (b_audioSphere)
+    if (doController.b_audioSphere)
         drawAudioSphere();
     
-    if (b_kinectContour) {
+    if (doController.b_kinectContour) {
         ofPushMatrix();
         ofScale(-1, 1, 1);
         drawKinectContour();
         ofPopMatrix();
     }
 
+
     ofPopMatrix();
     ofDisableDepthTest();
-    if (b_particleRiver)
+    if (doController.b_particleRiver)
         drawParticleRiver();
+
+    if (doController.b_tunnel)
+        drawTunnel();
 
 }
 
@@ -86,8 +94,10 @@ void ofApp::keyPressed(int key) {
     case 'F':
     case 'f':
         ofToggleFullscreen();
-        if (b_particleRiver)
+        if (doController.b_particleRiver)
             particleRiver.resize();
+        if (doController.b_tunnel)
+            tunnel.resize();
         break;
     case OF_KEY_UP:
         angle++;
@@ -202,7 +212,7 @@ void ofApp::setupGui() {
 
     // AudioSphere
     paramsAudioSphere.setName("Audio Sphere");
-    paramsAudioSphere.add(b_audioSphere.set("Draw AS", false));
+    paramsAudioSphere.add(doController.b_audioSphere.set("Draw AS", false));
     paramsAudioSphere.add(autoRotate.set("Rotate", true));
     paramsAudioSphere.add(rotationSpeed.set("Rotation Speed", 1, -2, 2));
     paramsAudioSphere.add(rotateSin.set("Sin Rotation", false));
@@ -211,7 +221,7 @@ void ofApp::setupGui() {
 
     // FlashingText
     paramsFlashingText.setName("Flashing Text");
-    paramsFlashingText.add(b_flashingText.set("Draw FT", false));
+    paramsFlashingText.add(doController.b_flashingText.set("Draw FT", false));
     paramsFlashingText.add(inputMessage.set("Message", "THE QUEEN IS DEAD"));
     paramsFlashingText.add(markMax.set("Mark (s)", 0.25, 0, 1));
     paramsFlashingText.add(spaceMax.set("Space (s)", 1.2, 0, 1.5));
@@ -221,23 +231,30 @@ void ofApp::setupGui() {
 
     // Kinect
     paramsKinect.setName("Kinect");
-    paramsKinect.add(b_kinect.set("Do", false));
+    paramsKinect.add(doController.b_kinect.set("Do", false));
     paramsKinect.add(kinectContour.nearThreshold.set("Near thresh", 230, 0, 255));
     paramsKinect.add(kinectContour.farThreshold.set("Far thresh", 210, 0, 255));
-    panelKinect.setup(paramsKinect, "settings.xml", 30, 380);
+    panelKinect.setup(paramsKinect, "settings.xml", 30, 320);
 
     // Expand point cloud
-    paramsPcExplode.setName("PCL Explode");
-    paramsKinect.add(bDrawPointCloud.set("PointCloud", false));
-    paramsPcExplode.add(b_pcExplode.set("Explode", false));
-    paramsPcExplode.add(b_pcRemerge.set("Remerge", false));
-    paramsPcExplode.add(b_pcSparkle.set("Sparkle", false));
-    paramsPcExplode.add(b_pcRotate.set("Rotate", false));
-    panelPcExplode.setup(paramsPcExplode, "settings.xml", 30, 620);
+    paramsKinectPointCloud.setName("PCL Explode");
+    paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("PointCloud", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_rotate.set("Rotate", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_shimmer.set("Shimmer", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", true));
+    paramsKinectPointCloud.add(kinectPointCloud.lightPosX.set("LightPositionX", 105, 0, 4000));
+    paramsKinectPointCloud.add(kinectPointCloud.lightPosY.set("LightPositionY", 720, 0, 4000));
+    paramsKinectPointCloud.add(kinectPointCloud.lightPosZ.set("LightPositionZ", 220, 0, 4000));
+    paramsKinectPointCloud.add(kinectPointCloud.lightOriX.set("LightOrientationX", 270, 0, 360));
+    paramsKinectPointCloud.add(kinectPointCloud.lightOriY.set("LightOrientationY", 0, 0, 180));
+    paramsKinectPointCloud.add(kinectPointCloud.lightOriZ.set("LightOrientationZ", 0, 0, 360));
+    panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 420);
 
     // ParticleRiver
     paramsParticleRiver.setName("Particle River");
-    paramsParticleRiver.add(b_particleRiver.set("Do", true));
+    paramsParticleRiver.add(doController.b_particleRiver.set("Do", false));
     paramsParticleRiver.add(particleRiver.drawMap.set("Draw Map", false));
     paramsParticleRiver.add(particleRiver.spread.set("Spread", 1.0f, 0.0f, 20.0f));
     paramsParticleRiver.add(particleRiver.speed.set("Speed", 2.5f, 0.0f, 20.0f));
@@ -249,11 +266,18 @@ void ofApp::setupGui() {
 
     // KinectContour
     paramsKinectContour.setName("Kinect Contour");
-    paramsKinectContour.add(b_kinectContour.set("Do", true));
+    paramsKinectContour.add(doController.b_kinectContour.set("Do", false));
     paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", false));
     paramsKinectContour.add(kinectContour.nContours.set("Num Contours", 5, 0, 10));
     paramsKinectContour.add(kinectContour.sizeRatio.set("Size Ratio", 0.7, 0, 2));
-    panelKinectContour.setup(paramsKinectContour, "settings.xml", 490, 500);
+    panelKinectContour.setup(paramsKinectContour, "settings.xml", 490, 465);
+
+    // Tunnel
+    paramsTunnel.setName("Tunnel");
+    paramsTunnel.add(doController.b_tunnel.set("Do", false));
+    paramsTunnel.add(tunnel.timeScale.set("Timescale", 100.0, 0, 1));
+    paramsTunnel.add(tunnel.clearAlpha.set("Clear Alpha", 0.5, 0, 1));
+    panelTunnel.setup(paramsTunnel, "settings.xml", 260, 465);
 
     ofSetBackgroundColor(0);
 }
@@ -317,11 +341,7 @@ void ofApp::setupFlashingText() {
 
 //--------------------------------------------------------------
 void ofApp::setupKinectPointCloud() {
-    kinectPC.setupKinectPointCloud();
-    b_pcRemerge.addListener(&kinectPC, &KinectPointCloud::remergeListener);
-    b_pcRemerge.addListener(this, &ofApp::remergeListener);
-    b_pcExplode.addListener(&kinectPC, &KinectPointCloud::explodeListener);
-    b_pcRotate.addListener(&kinectPC, &KinectPointCloud::rotateListener);
+    kinectPointCloud.setup();
 }
 
 //--------------------------------------------------------------
@@ -350,6 +370,10 @@ void ofApp::setupKinectContour() {
     kinectContour.setup();
 }
 
+void ofApp::setupTunnel() {
+    tunnel.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -374,20 +398,13 @@ void ofApp::updateKinect() {
     //sphere.setRadius(200);
     //sphere.setResolution(150);
     //sphere.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, 0);
-    //kinectPC.setKinectMesh(sphere.getMesh());
-    //kinectPC.kinectMesh = sphere.getMesh();
+    //kinectPointCloud.setKinectMesh(sphere.getMesh());
+    //kinectPointCloud.kinectMesh = sphere.getMesh();
 }
 
 //--------------------------------------------------------------
 void ofApp::updateKinectPointCloud() {
-    if (kinect.isFrameNew()) 
-        kinectPC.getNewFrame(kinect);
-
-    if (b_pcRemerge) {
-        b_pcExplode = false;
-    }
-    kinectPC.sparkle = b_pcSparkle;
-    kinectPC.updateKinectPointCloud();
+    kinectPointCloud.update();
 }
 
 //--------------------------------------------------------------
@@ -397,7 +414,7 @@ void ofApp::updateAudioSphere() {
 
 void ofApp::updateFlashingText() {
 
-    b_flashingText = false;
+    doController.b_flashingText = false;
     startingFrameNumber = ofGetFrameNum();
     flashFrames.clear();
     for (int i = 0; i < numFlashes; ++i) {
@@ -422,6 +439,11 @@ void ofApp::updateParticleRiver() {
 void ofApp::updateKinectContour() {
     kinectContour.update();
 }
+
+void ofApp::updateTunnel() {
+    tunnel.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -431,9 +453,10 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelAudioSphere.draw();
     panelFlashingText.draw();
     panelKinect.draw();
-    panelPcExplode.draw();
+    panelKinectPointCloud.draw();
     panelParticleRiver.draw();
     panelKinectContour.draw();
+    panelTunnel.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -509,7 +532,7 @@ void ofApp::drawKinect() {
 //--------------------------------------------------------------
 void ofApp::drawKinectPointCloud() {
 
-    kinectPC.drawKinectPointCloud(cam);
+    kinectPointCloud.draw(cam);
 }
 
 //--------------------------------------------------------------
@@ -546,7 +569,7 @@ void ofApp::drawFlashingText() {
         if (flashIdx > flashFrames.size() - 1) {
             flashFrames.clear();
             flashIdx = 0;
-            b_audioSphere = true;
+            doController.b_audioSphere = true;
         }
 
         flashIdx++;
@@ -562,6 +585,10 @@ void ofApp::drawParticleRiver() {
 
 void ofApp::drawKinectContour() {
     kinectContour.draw(spectrum[1]);
+}
+
+void ofApp::drawTunnel() {
+    tunnel.draw();
 }
 
 //==================== HELPERS =================================
@@ -581,9 +608,4 @@ void ofApp::analyseFFT() {
     green = static_cast<int>(std::min(ofMap(mids, 0, 6, 0, 255), 255.0f));
     blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
     brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
-}
-
-void ofApp::remergeListener(bool& b_pcRemerge_) {
-    if (b_pcRemerge_)
-        b_pcExplode = false;
 }

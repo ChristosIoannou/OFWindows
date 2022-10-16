@@ -1,54 +1,96 @@
 #include "KinectPointCloud.h"
 
-void KinectPointCloud::setupKinectPointCloud() {
+void KinectPointCloud::setup() {
     kinectMesh.setMode(OF_PRIMITIVE_POINTS);
     playMesh.setMode(OF_PRIMITIVE_POINTS);
+
+    // Listeners
+    b_remerge.addListener(this, &KinectPointCloud::remergeListener);
+    b_explode.addListener(this, &KinectPointCloud::explodeListener);
+    b_rotate.addListener(this, &KinectPointCloud::rotateListener);
+
+    ofVec3f origin(0, 0, 0);
+    ofVec3f x(1, 0, 0);
+    ofVec3f y(0, 1, 0);
+    ofVec3f z(0, 0, 1);
+    ofSetColor(ofColor::red);
+    ofDrawArrow(origin, x);
+    ofSetColor(ofColor::green);
+    ofDrawArrow(origin, y);
+    ofSetColor(ofColor::blue);
+    ofDrawArrow(origin, x);
+
+    ofVec3f downwards(y);
+    ofSetSmoothLighting(true);
+    light.setDiffuseColor(ofColor(225.f, 255.f, 255.f));
+    light.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+    light.setSpotlight();
+    light.setSpotlightCutOff(50);
+    light.setSpotlightCutOff(24);
+    //light.setOrientation({ 90, 0, 0 });
+    light.setPosition({ 0, 1000, 0 });
+    material.setShininess(120);
+    material.setSpecularColor(ofColor(255, 255, 255, 255));
 }
 
-void KinectPointCloud::updateKinectPointCloud() {
-    if (b_explode) {
-        usePlayMesh = true;
-        explode();
-    }
-    else if (b_remerge) {
+void KinectPointCloud::update() {
+    if (kinect.isFrameNew())
+        getNewFrame();
+
+    if (b_remerge) {
+        b_explode = false;
         usePlayMesh = true;
         remerge();
+    }
+    else if (b_explode) {
+        usePlayMesh = true;
+        explode();
     }
     else {
         usePlayMesh = false;
         freezeKinectMesh = false;
     }
+
+    light.setOrientation({ lightOriX, lightOriY, lightOriZ });
+    light.setPosition({ lightPosX, lightPosY, lightPosZ });
 }
 
-void KinectPointCloud::drawKinectPointCloud(ofEasyCam& cam) {
+void KinectPointCloud::draw(ofEasyCam& cam) {
     ofSetColor(255, 255, 255);
+    ofEnableLighting();
     cam.begin();
+    light.enable();
     ofSetColor(ofColor::white);
     glPointSize(1);
     ofPushMatrix();
     // the projected points are 'upside down' and 'backwards' 
-    ofScale(1, -1, -1);
+    ofScale(-1, -1, -1);
     ofTranslate(0, 0, -1000); // center the points a bit
     ofEnableDepthTest();
+
 
     if (b_rotate) {
         cam.setTarget(centroid);
         ofRotateY(startOffsetAngle += 0.5);
-        //ofRotateZ(ofGetFrameNum() * 0.5);
     }
 
-    if (usePlayMesh) {
-        playMesh.drawVertices();
+    if (!b_trapped) {
+        if (usePlayMesh) {
+            playMesh.drawVertices();
+        }
+        else {
+            kinectMesh.drawVertices();
+        }
     }
     else {
-        kinectMesh.drawVertices();
+        drawTrapped();
     }
     ofDisableDepthTest();
     ofPopMatrix();
 
-    //ofVec3f originVec(0, 0, 0);
-    //ofSphere origin = ofSphere(originVec, 10);
-
+    ofDisableLighting();
+    ofSetColor(light.getDiffuseColor());
+    light.draw();
     cam.end();
 }
 
@@ -80,8 +122,6 @@ void KinectPointCloud::remergeListener(bool& b_pcRemerge) {
     b_remerge = b_pcRemerge;
     if (b_remerge) {
         freezeKinectMesh = true;
-        //b_explode = false;
-        //b_remerge = true;
     }
 }
 
@@ -102,7 +142,6 @@ void KinectPointCloud::startExplode(){
 
 void KinectPointCloud::explode() {
     for (int i = 0; i < playMesh.getNumVertices(); ++i) {
-       //kinectPC.playMesh.getVertices()[i] = kinectPC.playMesh.getVertices()[i] + kinectPC.playMesh.getVertices()[i] + pcDirections[i];
        playMesh.getVertices()[i] = playMesh.getVertices()[i] + explodeDirections[i];
     }
 }
@@ -116,23 +155,72 @@ void KinectPointCloud::remerge() {
     }
 }
 
-void KinectPointCloud::getNewFrame(ofxKinect& kinect) {
+void KinectPointCloud::getNewFrame() {
     if (!freezeKinectMesh) {
         kinectMesh.clear();
+
+        if (!b_trapped) {
+            int step;
+            float shift;
+            if (b_shimmer) {
+                step = 2;
+                shift = sin(ofGetFrameNum() / 4) >= 0.0 ? 1.0f : 0.0f;
+            }
+            else {
+                step = 1;
+                shift = 1;
+            }
+            getFullFrame(step, shift);
+        }
+        else {
+            getReducedFrame();
+        }
+    }
+}
+
+void KinectPointCloud::getFullFrame(int step, int shift) {
+    if (!freezeKinectMesh) {
         int w = kinect.width;
         int h = kinect.height;
-        int step = 1;
         for (int y = 0; y < h; y += step) {
-            for (int x = 0; x < w; x += step) {
+            for (int x = (0 + shift); x < w; x += step) {
                 if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
-                    //mesh.addColor(kinect.getColorAt(x, y));
-                    if (sparkle && (x % 20 == 0)) {
-                        ofVec3f random(ofRandom(-100, 100), ofRandom(-100, 100), ofRandom(-100, 100));
-                        kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y) + random);
-                    }
                     kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
                 }
             }
         }
     }
+}
+
+void KinectPointCloud::getReducedFrame() {
+    if (!freezeKinectMesh) {
+        int w = kinect.width;
+        int h = kinect.height;
+        int step = 2;
+        for (int y = 0; y < h; y += step) {
+            for (int x = 0; x < w; x += floor(ofRandom(8))) {
+                if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
+                    kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                }
+            }
+        }
+    }
+}
+
+void KinectPointCloud::drawTrapped() {
+
+    material.begin();
+
+    ofSetColor(ofColor::lightGray);
+    for (int i = 0; i < kinectMesh.getNumVertices(); ++i) {
+
+        //ofSetColor(ofColor::lightGray);
+        ofDrawSphere(kinectMesh.getVertex(i), 3.5);
+        if (floor(ofRandom(20)) == 0) {
+           // ofSetColor(ofColor::darkGray, 20);
+            ofDrawLine(kinectMesh.getVertex(i), kinectMesh.getVertex(ofRandom(kinectMesh.getNumVertices())));
+        }
+    }
+
+    material.end();
 }

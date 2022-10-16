@@ -9,6 +9,8 @@
 #include "AudioSphere.h"
 #include "ParticleRiver.h"
 #include "KinectContour.h"
+#include "Tunnel.h"
+#include "DoController.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -39,6 +41,7 @@ public:
     void setupKinectPointCloud();
     void setupParticleRiver();
     void setupKinectContour();
+    void setupTunnel();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -49,6 +52,7 @@ public:
     void updateKinectPointCloud();
     void updateParticleRiver();
     void updateKinectContour();
+    void updateTunnel();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -58,6 +62,10 @@ public:
     void drawKinectPointCloud();
     void drawParticleRiver();
     void drawKinectContour();
+    void drawTunnel();
+
+    //--- DoController ---
+    DoController doController;
 
     //--- soundStream ---
     ofSoundStream soundStream;
@@ -90,7 +98,6 @@ public:
     AudioSphere audioSphere;
     ofParameterGroup paramsAudioSphere;
     ofxPanel panelAudioSphere;
-    ofParameter<bool> b_audioSphere;
     ofParameter<bool> autoRotate;
     ofParameter<float> rotationSpeed;
     ofParameter<bool> rotateSin;
@@ -100,7 +107,6 @@ public:
     ParticleRiver particleRiver;
     ofParameterGroup paramsParticleRiver;
     ofxPanel panelParticleRiver;
-    ofParameter<bool> b_particleRiver;
     //ofParameter<bool> b_particleRiverDrawMap;
 
     //--- time ---
@@ -113,7 +119,6 @@ public:
     ofParameterGroup paramsFlashingText;
     ofxPanel panelFlashingText;
     ofParameter<std::string> inputMessage;
-    ofParameter<bool> b_flashingText;
     ofParameter<float> markMax;            // max on time (s)
     ofParameter<float> spaceMax;         // max off time (s)
     ofParameter<int> framesLeft;    // (s)
@@ -127,25 +132,25 @@ public:
 
     //--- kinect ---
     ofxKinect kinect;
-    KinectPointCloud kinectPC;// (OF_PRIMITIVE_POINTS);
     int angle;
     bool getKinectFrame = true;
     bool usePlayMesh = false;
 
     //--- KinectPointCloud ---
-    void remergeListener(bool& b_pcRemerge);
-    ofParameterGroup paramsPcExplode;
-    ofxPanel panelPcExplode;
-    ofParameter<bool> b_pcRemerge;
-    ofParameter<bool> b_pcExplode;
-    ofParameter<bool> b_pcSparkle;
-    ofParameter<bool> b_pcRotate;
+    KinectPointCloud kinectPointCloud = KinectPointCloud(kinect);
+    ofParameterGroup paramsKinectPointCloud;
+    ofxPanel panelKinectPointCloud;
 
     //--- KinectContour ---
     KinectContour kinectContour = KinectContour(kinect);
     ofParameterGroup paramsKinectContour;
     ofxPanel panelKinectContour;
-    ofParameter<bool> b_kinectContour;
+
+    //--- Tunnel ---
+    Tunnel tunnel;
+    ofParameterGroup paramsTunnel;
+    ofxPanel panelTunnel;
+    //ofParameter<bool> b_tunnel;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
@@ -160,7 +165,9 @@ public:
 
     ofParameterGroup paramsKinect;
     ofxPanel panelKinect;
-    ofParameter<bool> b_kinect;
-    ofParameter<bool> bDrawPointCloud;
+    //ofParameter<bool> b_kinect;
+    //ofParameter<bool> b_kinectPointCloud;
+
+    
 
 };
