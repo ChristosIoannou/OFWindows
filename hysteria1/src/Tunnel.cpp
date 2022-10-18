@@ -62,6 +62,7 @@ void Tunnel::drawFbo() {
 void Tunnel::draw() {
 
     //ofSetColor(255, 255, 255);
+    ofDisableDepthTest();
     ofSetColor(tunnelColor);
     fbo.draw(0, 0);
 

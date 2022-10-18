@@ -110,6 +110,7 @@ void ParticleRiver::update() {
 
 //--------------------------------------------------------------
 void ParticleRiver::draw() {
+	ofDisableDepthTest();
 	int w = ofGetWidth();
 	int h = ofGetHeight();
 

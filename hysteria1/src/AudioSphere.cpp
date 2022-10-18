@@ -90,7 +90,9 @@ void AudioSphere::update(std::vector<float>& spectrum, float posDecayRate) {
 
 void AudioSphere::draw(bool autoRotate, float rotationSpeed, bool rotateSin) {
     //cam.begin();
-
+    ofEnableDepthTest();
+    ofPushMatrix();
+    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     if (autoRotate) {
         ofRotateY(-30);
         if (rotateSin)
@@ -114,7 +116,8 @@ void AudioSphere::draw(bool autoRotate, float rotationSpeed, bool rotateSin) {
     sphereMesh.drawVertices();
     shader.end();
     glDisable(GL_POINT_SMOOTH);
-
+    ofPopMatrix();
+    ofDisableDepthTest();
     //cam.end();
 }
 

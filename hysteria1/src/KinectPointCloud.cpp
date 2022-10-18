@@ -56,41 +56,29 @@ void KinectPointCloud::update() {
 }
 
 void KinectPointCloud::draw(ofEasyCam& cam) {
-    ofSetColor(255, 255, 255);
-    ofEnableLighting();
     cam.begin();
-    light.enable();
-    ofSetColor(ofColor::white);
+    ofSetColor(255, 255, 255);
     glPointSize(1);
     ofPushMatrix();
     // the projected points are 'upside down' and 'backwards' 
-    ofScale(-1, -1, -1);
-    ofTranslate(0, 0, -1000); // center the points a bit
+    ofScale(1, -1, -1);
+    ofTranslate(0, 0, -1000);
     ofEnableDepthTest();
-
 
     if (b_rotate) {
         cam.setTarget(centroid);
         ofRotateY(startOffsetAngle += 0.5);
     }
 
-    if (!b_trapped) {
-        if (usePlayMesh) {
-            playMesh.drawVertices();
-        }
-        else {
-            kinectMesh.drawVertices();
-        }
+    if (usePlayMesh) {
+        playMesh.drawVertices();
     }
     else {
-        drawTrapped();
+        kinectMesh.drawVertices();
     }
+
     ofDisableDepthTest();
     ofPopMatrix();
-
-    ofDisableLighting();
-    ofSetColor(light.getDiffuseColor());
-    light.draw();
     cam.end();
 }
 
