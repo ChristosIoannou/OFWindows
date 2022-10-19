@@ -20,6 +20,7 @@ void ofApp::setup() {
     setupParticleRiver();
     setupKinectContour();
     setupTunnel();
+    setupSurfaceMesh();
 }
 
 //--------------------------------------------------------------
@@ -41,7 +42,8 @@ void ofApp::update() {
         updateKinectContour();
     if (doController.b_tunnel)
         updateTunnel();
-
+    if (doController.b_surfaceMesh)
+        updateSurfaceMesh();
 }
 
 //--------------------------------------------------------------
@@ -59,6 +61,8 @@ void ofApp::draw() {
         drawParticleRiver();
     if (doController.b_tunnel)
         drawTunnel();
+    if (doController.b_surfaceMesh)
+        drawSurfaceMesh();
 }
 
 //--------------------------------------------------------------
@@ -170,7 +174,7 @@ void ofApp::audioIn(ofSoundBuffer& input) {
 
     ////Update our smoothed spectrum
     for (int i = 0; i < SPECTRAL_BANDS; i++) {
-        soundSpectrum[i] *= 0.95;	//Slow decreasing
+        soundSpectrum[i] *= fftDecay;	//Slow decreasing
         soundSpectrum[i] = max(soundSpectrum[i], fftOutput[i]);
     }
     soundMutex.unlock();
@@ -190,6 +194,7 @@ void ofApp::setupGui() {
     // FFT/Spectrum
     paramsFFT.setName("FFT/Spectrum");
     paramsFFT.add(volumeMultiplier.set("Volume", 2, 0, 8));
+    paramsFFT.add(fftDecay.set("Decay", 0.95, 0.8, 1.0));
     panelFFT.setup(paramsFFT, "settings.xml", 30, 265);
 
     // AudioSphere
@@ -255,6 +260,8 @@ void ofApp::setupGui() {
     // SurfaceMesh
     paramsSurfaceMesh.setName("SurfaceMesh");
     paramsSurfaceMesh.add(doController.b_surfaceMesh.set("Do", false));
+    paramsSurfaceMesh.add(surfaceMesh.usePerlin.set("Perlin", true));
+    paramsSurfaceMesh.add(surfaceMesh.amount.set("Amount", 0, 0, 6));
     panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 30, 630);
 
     ofSetBackgroundColor(0);
@@ -352,6 +359,10 @@ void ofApp::setupTunnel() {
     tunnel.setup();
 }
 
+void ofApp::setupSurfaceMesh() {
+    surfaceMesh.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -420,6 +431,10 @@ void ofApp::updateKinectContour() {
 
 void ofApp::updateTunnel() {
     tunnel.update();
+}
+
+void ofApp::updateSurfaceMesh() {
+    surfaceMesh.update(bass, mids, highs);
 }
 
 //======================= DRAW =================================
@@ -571,6 +586,10 @@ void ofApp::drawTunnel() {
     tunnel.draw();
 }
 
+void ofApp::drawSurfaceMesh() {
+    surfaceMesh.draw();
+}
+
 //==================== HELPERS =================================
 //--------------------------------------------------------------
 void ofApp::analyseFFT() {
@@ -584,8 +603,8 @@ void ofApp::analyseFFT() {
     highs = std::accumulate(gb_it, spectrum.end(), 0.0f);
     totals = std::accumulate(spectrum.begin(), spectrum.end(), 0.0f);
 
-    red = static_cast<int>(std::min(ofMap(bass, 0, 6, 0, 255), 255.0f));
-    green = static_cast<int>(std::min(ofMap(mids, 0, 6, 0, 255), 255.0f));
-    blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
-    brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
+    //red = static_cast<int>(std::min(ofMap(bass, 0, 6, 0, 255), 255.0f));
+    //green = static_cast<int>(std::min(ofMap(mids, 0, 6, 0, 255), 255.0f));
+    //blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
+    //brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
 }
