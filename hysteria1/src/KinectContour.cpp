@@ -33,10 +33,12 @@ void KinectContour::update() {
 }
 
 void KinectContour::draw(float bass) {
-
+    ofDisableDepthTest();
+    ofPushMatrix();
+    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     if (continuousConcentric)
         concentricContours(bass);
-
+    ofPopMatrix();
 }
 
 void KinectContour::concentricContours(float bass) {

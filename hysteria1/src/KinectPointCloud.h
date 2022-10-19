@@ -22,8 +22,6 @@ public:
 	void getNewFrame();
 
 	void getFullFrame(int step, int shift);
-	void getReducedFrame();
-	void drawTrapped();
 
 	void setKinectMesh(ofMesh mesh);
 	void setPlayMesh(ofMesh mesh);
@@ -40,6 +38,7 @@ public:
 	ofxKinect& kinect;
 	ofMesh kinectMesh;
 	ofMesh playMesh;
+	ofVboMesh floatMesh;
 	std::vector<ofVec3f> explodeDirections;
 	ofVec3f centroid;
 	bool usePlayMesh = false;
@@ -48,16 +47,6 @@ public:
 
 	ofParameter<bool> b_remerge;
 	ofParameter<bool> b_explode;
-	ofParameter<bool> b_rotate;
-	ofParameter<bool> b_shimmer;
-	ofParameter<bool> b_trapped;
-	ofParameter<int> lightPosX;
-	ofParameter<int> lightPosY;
-	ofParameter<int> lightPosZ;
-	ofParameter<int> lightOriX;
-	ofParameter<int> lightOriY;
-	ofParameter<int> lightOriZ;
+	ofParameter<bool> b_float;
 
-	ofMaterial material;
-	ofLight light;
 };

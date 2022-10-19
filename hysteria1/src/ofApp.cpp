@@ -8,6 +8,7 @@ void ofApp::setup() {
     ofSetVerticalSync(true);
     ofSetFrameRate(-1);
     glPointSize(1.0);
+    ofBackground(ofColor::black);	//Set up the background
 
     doController.setup();
     setupSoundStream();
@@ -46,37 +47,18 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-    ofBackground(ofColor::black);	//Set up the background
-
-    //if (b_kinect)
-    //    drawKinect();
-
     ofEnableAlphaBlending();
-    ofPushMatrix();
-    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
-
     drawFlashingText();
     if (doController.b_kinectPointCloud)
         drawKinectPointCloud();
     if (doController.b_audioSphere)
         drawAudioSphere();
-    
-    if (doController.b_kinectContour) {
-        ofPushMatrix();
-        ofScale(-1, 1, 1);
+    if (doController.b_kinectContour)
         drawKinectContour();
-        ofPopMatrix();
-    }
-
-
-    ofPopMatrix();
-    ofDisableDepthTest();
     if (doController.b_particleRiver)
         drawParticleRiver();
-
     if (doController.b_tunnel)
         drawTunnel();
-
 }
 
 //--------------------------------------------------------------
@@ -243,13 +225,8 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_rotate.set("Rotate", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_shimmer.set("Shimmer", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", true));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosX.set("LightPositionX", 105, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosY.set("LightPositionY", 720, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosZ.set("LightPositionZ", 220, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriX.set("LightOrientationX", 270, 0, 360));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriY.set("LightOrientationY", 0, 0, 180));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriZ.set("LightOrientationZ", 0, 0, 360));
+    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_float.set("Float", false));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 420);
 
     // ParticleRiver
@@ -267,7 +244,7 @@ void ofApp::setupGui() {
     // KinectContour
     paramsKinectContour.setName("Kinect Contour");
     paramsKinectContour.add(doController.b_kinectContour.set("Do", false));
-    paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", false));
+    paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", true));
     paramsKinectContour.add(kinectContour.nContours.set("Num Contours", 5, 0, 10));
     paramsKinectContour.add(kinectContour.sizeRatio.set("Size Ratio", 0.7, 0, 2));
     panelKinectContour.setup(paramsKinectContour, "settings.xml", 490, 465);
@@ -542,7 +519,9 @@ void ofApp::drawAudioSphere() {
 
 //--------------------------------------------------------------
 void ofApp::drawFlashingText() {
-
+    ofDisableDepthTest();
+    ofPushMatrix();
+    ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     if (!flashFrames.empty()) {
 
         std::string text = inputMessage.get();
@@ -569,14 +548,13 @@ void ofApp::drawFlashingText() {
         if (flashIdx > flashFrames.size() - 1) {
             flashFrames.clear();
             flashIdx = 0;
-            doController.b_audioSphere = true;
         }
 
         flashIdx++;
      
     }
     framesLeft = flashFrames.size() - flashIdx;
-
+    ofPopMatrix();
 }
 
 void ofApp::drawParticleRiver() {
