@@ -11,6 +11,7 @@
 #include "KinectContour.h"
 #include "Tunnel.h"
 #include "DoController.h"
+#include "SurfaceMesh.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -151,6 +152,11 @@ public:
     ofParameterGroup paramsTunnel;
     ofxPanel panelTunnel;
     //ofParameter<bool> b_tunnel;
+
+    //--- SurfaceMesh ---
+    SurfaceMesh surfaceMesh;
+    ofParameterGroup paramsSurfaceMesh;
+    ofxPanel panelSurfaceMesh;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;

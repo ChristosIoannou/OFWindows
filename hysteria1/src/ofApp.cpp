@@ -223,10 +223,6 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("PointCloud", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_rotate.set("Rotate", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_shimmer.set("Shimmer", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_float.set("Float", false));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 420);
 
     // ParticleRiver
@@ -255,6 +251,11 @@ void ofApp::setupGui() {
     paramsTunnel.add(tunnel.timeScale.set("Timescale", 100.0, 0, 1));
     paramsTunnel.add(tunnel.clearAlpha.set("Clear Alpha", 0.5, 0, 1));
     panelTunnel.setup(paramsTunnel, "settings.xml", 260, 465);
+
+    // SurfaceMesh
+    paramsSurfaceMesh.setName("SurfaceMesh");
+    paramsSurfaceMesh.add(doController.b_surfaceMesh.set("Do", false));
+    panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 30, 630);
 
     ofSetBackgroundColor(0);
 }
@@ -434,6 +435,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelParticleRiver.draw();
     panelKinectContour.draw();
     panelTunnel.draw();
+    panelSurfaceMesh.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {

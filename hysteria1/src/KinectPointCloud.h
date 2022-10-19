@@ -1,13 +1,5 @@
 #include "ofxKinect.h"
 
-enum explodeStatus
-{
-	OFF = 0,
-	EXPLODING = 1,
-	CONTRACTING = 2
-
-};
-
 class KinectPointCloud {
 
 public:
@@ -33,7 +25,6 @@ public:
 	// Listeners
 	void remergeListener(bool& b_pcRemerge);
 	void explodeListener(bool& b_pcExpand);
-	void rotateListener(bool& b_pcRotate);
 
 	ofxKinect& kinect;
 	ofMesh kinectMesh;
