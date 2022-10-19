@@ -225,13 +225,8 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_rotate.set("Rotate", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_shimmer.set("Shimmer", false));
-    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", true));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosX.set("LightPositionX", 105, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosY.set("LightPositionY", 720, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightPosZ.set("LightPositionZ", 220, 0, 4000));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriX.set("LightOrientationX", 270, 0, 360));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriY.set("LightOrientationY", 0, 0, 180));
-    paramsKinectPointCloud.add(kinectPointCloud.lightOriZ.set("LightOrientationZ", 0, 0, 360));
+    paramsKinectPointCloud.add(kinectPointCloud.b_trapped.set("Trapped", false));
+    paramsKinectPointCloud.add(kinectPointCloud.b_float.set("Float", false));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 420);
 
     // ParticleRiver
