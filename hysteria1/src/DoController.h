@@ -13,6 +13,7 @@ public:
 	void kinectContourListener(bool& b_kinectContour);
 	void kinectPointCloudListener(bool& b_kinectPointCloud);
 	void tunnelListener(bool& b_tunnel);
+	void surfaceMeshListener(bool& b_surfaceMesh);
 
 	ofParameter<bool> b_audioSphere;
 	ofParameter<bool> b_particleRiver;
@@ -21,5 +22,6 @@ public:
 	ofParameter<bool> b_kinect;
 	ofParameter<bool> b_kinectPointCloud;
 	ofParameter<bool> b_tunnel;
+	ofParameter<bool> b_surfaceMesh;
 
 };

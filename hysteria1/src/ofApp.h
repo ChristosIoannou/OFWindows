@@ -11,6 +11,7 @@
 #include "KinectContour.h"
 #include "Tunnel.h"
 #include "DoController.h"
+#include "SurfaceMesh.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -42,6 +43,7 @@ public:
     void setupParticleRiver();
     void setupKinectContour();
     void setupTunnel();
+    void setupSurfaceMesh();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -53,6 +55,7 @@ public:
     void updateParticleRiver();
     void updateKinectContour();
     void updateTunnel();
+    void updateSurfaceMesh();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -63,6 +66,7 @@ public:
     void drawParticleRiver();
     void drawKinectContour();
     void drawTunnel();
+    void drawSurfaceMesh();
 
     //--- DoController ---
     DoController doController;
@@ -77,13 +81,13 @@ public:
     //--- fft ---
     void analyseFFT();
     ofxFft* fft;
+    ofParameter<float> fftDecay;
     std::mutex soundMutex;
     float* audioInput;
     float* fftOutput;
     std::vector<float> spectrum, soundSpectrum;      //Smoothed spectrum values
     float bass, mids, highs, totals;
-    int red, green, blue;
-    float brightness;
+    ofParameter<int> bassMid, midHigh;
 
     //--- beatDetector ---
     typedef std::deque<std::vector<float>> FFTHistoryContainer;
@@ -151,6 +155,11 @@ public:
     ofParameterGroup paramsTunnel;
     ofxPanel panelTunnel;
     //ofParameter<bool> b_tunnel;
+
+    //--- SurfaceMesh ---
+    SurfaceMesh surfaceMesh = SurfaceMesh(cam);
+    ofParameterGroup paramsSurfaceMesh;
+    ofxPanel panelSurfaceMesh;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;

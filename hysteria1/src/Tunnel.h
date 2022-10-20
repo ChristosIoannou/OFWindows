@@ -11,8 +11,7 @@ public:
 	void drawFbo();
 	void resize();
 
-	ofParameter<float> timeScale;
-	ofParameter<float> clearAlpha;
+	ofParameter<int> spacing;
 	ofFbo fbo;
 	ofColor tunnelColor;
 };
