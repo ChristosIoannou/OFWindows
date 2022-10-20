@@ -35,10 +35,8 @@ void SurfaceMesh::update(float bass, float mids, float highs) {
                 position.z = (ofMap(ofNoise(count, ofGetElapsedTimef()), 0, 1, 0, bass * 20));
             //std::cout << position.z << std::endl;
             // ofColor SurfaceMesh::surfaceColorRadiant(ofVec3f position)
-            ofColor surfaceColor;
-            surfaceColor.setHsb(ofMap(position.z, 0, 30, 100, 150, false), 255, 255, 105);
             mesh.setVertex(count, position);
-            mesh.addColor(surfaceColor);
+            mesh.addColor(calculateColor(position));
             count++;
         }
     }
@@ -48,11 +46,28 @@ void SurfaceMesh::draw() {
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
     cam.begin();
-    ofColor surfaceColor;
-    surfaceColor.setHsb(145, 255, 255, 70);
-    ofSetColor(surfaceColor);
+    //ofColor surfaceColor;
+    //surfaceColor.setHsb(145, 255, 255, 70);
+    //ofSetColor(surfaceColor);
     mesh.drawWireframe();
     cam.end();
     ofPopMatrix();
     //gui.draw();
+}
+
+ofFloatColor SurfaceMesh::calculateColor(ofVec3f position) {
+    ofFloatColor surfaceColor;
+   // auto position = position_;
+
+    switch (colorScheme)
+    {
+    case ColorScheme::Z:
+        surfaceColor.setHsb(ofMap(position.z, 0, 30, 0.392, 0.588, false), 1.0f, 1.0f, 0.392);
+        //surfaceColor.setHsb(ofMap(position.z, 0, 30, 100, 150, false), 255, 255, 105);
+        break;
+    case ColorScheme::RAD:
+        surfaceColor.setHsb(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    return surfaceColor;
 }

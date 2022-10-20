@@ -195,6 +195,8 @@ void ofApp::setupGui() {
     paramsFFT.setName("FFT/Spectrum");
     paramsFFT.add(volumeMultiplier.set("Volume", 2, 0, 8));
     paramsFFT.add(fftDecay.set("Decay", 0.95, 0.8, 1.0));
+    paramsFFT.add(bassMid.set("BassMid", 3, 0, 48));
+    paramsFFT.add(midHigh.set("MidHigh", 20, 0, 48));
     panelFFT.setup(paramsFFT, "settings.xml", 30, 265);
 
     // AudioSphere
@@ -221,14 +223,14 @@ void ofApp::setupGui() {
     paramsKinect.add(doController.b_kinect.set("Do", false));
     paramsKinect.add(kinectContour.nearThreshold.set("Near thresh", 230, 0, 255));
     paramsKinect.add(kinectContour.farThreshold.set("Far thresh", 210, 0, 255));
-    panelKinect.setup(paramsKinect, "settings.xml", 30, 320);
+    panelKinect.setup(paramsKinect, "settings.xml", 30, 390);
 
     // Expand point cloud
     paramsKinectPointCloud.setName("PCL Explode");
     paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("PointCloud", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
-    panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 420);
+    panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
 
     // ParticleRiver
     paramsParticleRiver.setName("Particle River");
@@ -240,7 +242,7 @@ void ofApp::setupGui() {
     paramsParticleRiver.add(particleRiver.spreadSin.set("Spread Sin", false));
     paramsParticleRiver.add(particleRiver.speedSin.set("Speed Sin", false));
     paramsParticleRiver.add(particleRiver.circ_coeffSin.set("Circ Coeff Sin", false));
-    panelParticleRiver.setup(paramsParticleRiver, "settings.xml", 260, 270);
+    panelParticleRiver.setup(paramsParticleRiver, "settings.xml", 260, 245);
 
     // KinectContour
     paramsKinectContour.setName("Kinect Contour");
@@ -253,16 +255,15 @@ void ofApp::setupGui() {
     // Tunnel
     paramsTunnel.setName("Tunnel");
     paramsTunnel.add(doController.b_tunnel.set("Do", false));
-    paramsTunnel.add(tunnel.timeScale.set("Timescale", 100.0, 0, 1));
-    paramsTunnel.add(tunnel.clearAlpha.set("Clear Alpha", 0.5, 0, 1));
-    panelTunnel.setup(paramsTunnel, "settings.xml", 260, 465);
+    paramsTunnel.add(tunnel.spacing.set("Spacing", 15, 0, 20));
+    panelTunnel.setup(paramsTunnel, "settings.xml", 260, 445);
 
     // SurfaceMesh
     paramsSurfaceMesh.setName("SurfaceMesh");
     paramsSurfaceMesh.add(doController.b_surfaceMesh.set("Do", false));
     paramsSurfaceMesh.add(surfaceMesh.usePerlin.set("Perlin", true));
-    paramsSurfaceMesh.add(surfaceMesh.amount.set("Amount", 0, 0, 6));
-    panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 30, 630);
+    paramsSurfaceMesh.add(surfaceMesh.colorScheme.set("Color Scheme", 0, 0, 1));
+    panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 260, 525);
 
     ofSetBackgroundColor(0);
 }
@@ -461,8 +462,15 @@ void ofApp::drawGui(ofEventArgs& args) {
         ofSetColor(ofColor::pink);
         ofDrawBitmapString("FFT Spectrum:", 0, 0);
         ofRect(0, 10, SPECTRAL_BANDS * 5, 100);
-        ofSetColor(ofColor::lightGoldenRodYellow); //Gray color
+        //ofSetColor(ofColor::lightGoldenRodYellow); //Gray color
         for (int i = 0; i < SPECTRAL_BANDS; i++) {
+            if (i < bassMid)
+                ofSetColor(ofColor::red);
+            else if (i < midHigh)
+                ofSetColor(ofColor::green);
+            else
+                ofSetColor(ofColor::blue);
+
             ofDrawRectangle(i * 5, 110, 3, -spectrum[i] * 50);
         }
         ofPopMatrix();
@@ -472,9 +480,9 @@ void ofApp::drawGui(ofEventArgs& args) {
     if (drawBark) {
         ofPushMatrix();
         ofTranslate(280, 20);
+        ofSetColor(ofColor::orange);
         ofDrawBitmapString("Bark Spectrum:", 0, 0);
         ofRect(0, 10, BARK_MAX * 10, 100);
-        ofSetColor(ofColor::orange);
         for (int i = 0; i < BARK_MAX; i++) {
             //Draw bandRad and bandVel by black color,
             //and other by gray color
@@ -595,16 +603,13 @@ void ofApp::drawSurfaceMesh() {
 void ofApp::analyseFFT() {
 
     //Calculate color based on range
-    std::vector<float>::iterator rg_it = std::next(spectrum.begin(), 3);
-    std::vector<float>::iterator gb_it = std::next(spectrum.begin(), 20);
+    midHigh = midHigh <= bassMid ? bassMid : midHigh;
+    std::vector<float>::iterator rg_it = std::next(spectrum.begin(), bassMid);
+    std::vector<float>::iterator gb_it = std::next(spectrum.begin(), midHigh);
 
     bass = std::accumulate(spectrum.begin(), rg_it, 0.0f);
     mids = std::accumulate(rg_it, gb_it, 0.0f);
     highs = std::accumulate(gb_it, spectrum.end(), 0.0f);
     totals = std::accumulate(spectrum.begin(), spectrum.end(), 0.0f);
 
-    //red = static_cast<int>(std::min(ofMap(bass, 0, 6, 0, 255), 255.0f));
-    //green = static_cast<int>(std::min(ofMap(mids, 0, 6, 0, 255), 255.0f));
-    //blue = static_cast<int>(std::min(ofMap(highs, 0, 6, 0, 255), 255.0f));
-    //brightness = std::min(ofMap(totals, 0, 10, 100, 255), 255.0f);
 }

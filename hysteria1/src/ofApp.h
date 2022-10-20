@@ -87,8 +87,7 @@ public:
     float* fftOutput;
     std::vector<float> spectrum, soundSpectrum;      //Smoothed spectrum values
     float bass, mids, highs, totals;
-    int red, green, blue;
-    float brightness;
+    ofParameter<int> bassMid, midHigh;
 
     //--- beatDetector ---
     typedef std::deque<std::vector<float>> FFTHistoryContainer;
