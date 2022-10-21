@@ -33,9 +33,6 @@ public:
 	ofParameter<bool> zoom;
 
 	int size = 96;
-	float ZstartOffset, ZangleIncrement;
-	float XstartOffset;
-	float YstartOffset;
 
 	ofEasyCam& cam;
 };
