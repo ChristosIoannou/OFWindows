@@ -38,7 +38,6 @@ void Tunnel::resize() {
 
 void Tunnel::drawFbo() {
     ofSetRectMode(OF_RECTMODE_CENTER);
-    //ofSetColor(ofColor::aquamarine);
     if (floor(ofRandom(20)) == 0) {
         tunnelColor.setHsb(ofRandom(255), 255, 255, 255);
         ofSetColor(tunnelColor);
@@ -61,7 +60,6 @@ void Tunnel::drawFbo() {
 
 void Tunnel::draw() {
 
-    //ofSetColor(255, 255, 255);
     ofDisableDepthTest();
     ofSetColor(tunnelColor);
     fbo.draw(0, 0);

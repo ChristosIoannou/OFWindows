@@ -262,7 +262,15 @@ void ofApp::setupGui() {
     paramsSurfaceMesh.setName("SurfaceMesh");
     paramsSurfaceMesh.add(doController.b_surfaceMesh.set("Do", false));
     paramsSurfaceMesh.add(surfaceMesh.usePerlin.set("Perlin", true));
-    paramsSurfaceMesh.add(surfaceMesh.colorScheme.set("Color Scheme", 0, 0, 1));
+    paramsSurfaceMesh.add(surfaceMesh.alpha.set("Alpha", 0.3, 0.0, 1.0));
+    paramsSurfaceMesh.add(surfaceMesh.colorScheme.set("Color Scheme", 0, 0, 2));
+    //paramsSurfaceMesh.add(surfaceMesh.circleLower.set("Circle Lower", 0.0, 0.0, 1.0f));
+    //paramsSurfaceMesh.add(surfaceMesh.circleUpper.set("Circle Upper", 1.0, 0.0, 1.0f));
+    paramsSurfaceMesh.add(surfaceMesh.sinCircle.set("Sin Circle", false));
+    paramsSurfaceMesh.add(surfaceMesh.rotateZ.set("RotateZ", false));
+    paramsSurfaceMesh.add(surfaceMesh.rotateX.set("RotateX", false));
+    paramsSurfaceMesh.add(surfaceMesh.rotateY.set("RotateY", false));
+    paramsSurfaceMesh.add(surfaceMesh.zoom.set("Zoom", false));
     panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 260, 525);
 
     ofSetBackgroundColor(0);

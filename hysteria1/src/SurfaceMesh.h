@@ -4,7 +4,8 @@
 
 enum ColorScheme {
 	Z,
-	RAD
+	CIRCLE,
+	SQUARE
 };
 
 class SurfaceMesh {
@@ -21,7 +22,15 @@ public:
 
 	ofMesh mesh;
 	ofParameter<bool> usePerlin;
+	ofParameter<float> alpha;
 	ofParameter<int> colorScheme;
+	ofParameter<float> circleLower;
+	ofParameter<float> circleUpper;
+	ofParameter<bool> sinCircle;
+	ofParameter<bool> rotateZ;
+	ofParameter<bool> rotateX;
+	ofParameter<bool> rotateY;
+	ofParameter<bool> zoom;
 
 	int size = 96;
 
