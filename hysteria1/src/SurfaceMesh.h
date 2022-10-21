@@ -5,7 +5,7 @@
 enum ColorScheme {
 	Z,
 	CIRCLE,
-	SQUARE
+	WHITE
 };
 
 class SurfaceMesh {
@@ -31,6 +31,8 @@ public:
 	ofParameter<bool> rotateX;
 	ofParameter<bool> rotateY;
 	ofParameter<bool> zoom;
+	ofParameter<bool> rangeDependent;
+	ofParameter<bool> wireframe;
 
 	int size = 96;
 

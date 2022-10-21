@@ -46,7 +46,7 @@ public:
 	float currentRot = 0;
 	bool vsync = false;
 	bool vboInited = false;
-	int pointSize = 1;
+	float pointSize = 1.4;
 	float rc = 0.01;
 
 	bool drawParts = true;
