@@ -20,12 +20,6 @@ void SurfaceMesh::setup() {
         }
     }
 
-    XstartOffset = 0.0f;
-    YstartOffset = 0.0f;
-    ZstartOffset = 0.0f;
-    //XangleIncrement = 180.0 / float(size);
-    //YangleIncrement = 180.0 / float(size);
-    ZangleIncrement = 180.0 / float(size);
 }
 
 void SurfaceMesh::update(float bass, float mids, float highs) {
@@ -46,8 +40,8 @@ void SurfaceMesh::update(float bass, float mids, float highs) {
     for (int x = 0; x < size; x++) {
         for (int y = 0; y < size; y++) {
             ofVec3f position = mesh.getVertex(count);
-            if (usePerlin)
-                position.z = (ofMap(ofSignedNoise(count, ofGetElapsedTimef()), -1, 1, 0, bass*20));
+            if (usePerlin) 
+                position.z = (ofMap(ofSignedNoise(count, ofGetElapsedTimef()), -1, 1, 0, bass * 20));
             else
                 position.z = (ofMap(ofNoise(count, ofGetElapsedTimef()), 0, 1, 0, bass * 20));
             //std::cout << position.z << std::endl;
@@ -65,13 +59,13 @@ void SurfaceMesh::draw() {
     cam.begin();
 
     if (zoom)
-        ofTranslate(0, 0, (abs(ofSignedNoise(ofGetElapsedTimef()) * 0.1)) * 1000);
+        ofTranslate(0, 0, (abs(cos(ofGetElapsedTimef()) * 0.07)) * 3000);
     if (rotateZ)
-        ofRotateZ(ofSignedNoise(ofGetElapsedTimef() * 0.1) * 720.0);
+        ofRotateZ(ofSignedNoise(ofGetElapsedTimef() * 0.07) * 720.0);
     if (rotateX)
-        ofRotateX(ofSignedNoise(ofGetElapsedTimef() * 0.1) * 720.0);
+        ofRotateX(ofSignedNoise(ofGetElapsedTimef() * 0.07) * 720.0);
     if (rotateY)
-        ofRotateY(ofSignedNoise(ofGetElapsedTimef() * 0.1) * 720.0);
+        ofRotateY(ofSignedNoise(ofGetElapsedTimef() * 0.07) * 720.0);
 
     mesh.drawWireframe();
     cam.end();
