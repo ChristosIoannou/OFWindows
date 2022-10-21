@@ -226,8 +226,8 @@ void ofApp::setupGui() {
     panelKinect.setup(paramsKinect, "settings.xml", 30, 390);
 
     // Expand point cloud
-    paramsKinectPointCloud.setName("PCL Explode");
-    paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("PointCloud", false));
+    paramsKinectPointCloud.setName("Kinect Point Cloud");
+    paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("Do", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
@@ -250,7 +250,7 @@ void ofApp::setupGui() {
     paramsKinectContour.add(kinectContour.continuousConcentric.set("Continuous Concentric", true));
     paramsKinectContour.add(kinectContour.nContours.set("Num Contours", 5, 0, 10));
     paramsKinectContour.add(kinectContour.sizeRatio.set("Size Ratio", 0.7, 0, 2));
-    panelKinectContour.setup(paramsKinectContour, "settings.xml", 490, 465);
+    panelKinectContour.setup(paramsKinectContour, "settings.xml", 30, 580);
 
     // Tunnel
     paramsTunnel.setName("Tunnel");
@@ -263,15 +263,15 @@ void ofApp::setupGui() {
     paramsSurfaceMesh.add(doController.b_surfaceMesh.set("Do", false));
     paramsSurfaceMesh.add(surfaceMesh.usePerlin.set("Perlin", true));
     paramsSurfaceMesh.add(surfaceMesh.alpha.set("Alpha", 0.3, 0.0, 1.0));
-    paramsSurfaceMesh.add(surfaceMesh.colorScheme.set("Color Scheme", 0, 0, 2));
-    //paramsSurfaceMesh.add(surfaceMesh.circleLower.set("Circle Lower", 0.0, 0.0, 1.0f));
-    //paramsSurfaceMesh.add(surfaceMesh.circleUpper.set("Circle Upper", 1.0, 0.0, 1.0f));
+    paramsSurfaceMesh.add(surfaceMesh.rangeDependent.set("Range Dependent", false));
+    paramsSurfaceMesh.add(surfaceMesh.colorScheme.set("Color Scheme", 2, 0, 2));
     paramsSurfaceMesh.add(surfaceMesh.sinCircle.set("Sin Circle", false));
     paramsSurfaceMesh.add(surfaceMesh.rotateZ.set("RotateZ", false));
     paramsSurfaceMesh.add(surfaceMesh.rotateX.set("RotateX", false));
     paramsSurfaceMesh.add(surfaceMesh.rotateY.set("RotateY", false));
     paramsSurfaceMesh.add(surfaceMesh.zoom.set("Zoom", false));
-    panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 260, 525);
+    paramsSurfaceMesh.add(surfaceMesh.wireframe.set("Wireframe", true));
+    panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 490, 465);
 
     ofSetBackgroundColor(0);
 }

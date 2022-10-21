@@ -40,10 +40,20 @@ void SurfaceMesh::update(float bass, float mids, float highs) {
     for (int x = 0; x < size; x++) {
         for (int y = 0; y < size; y++) {
             ofVec3f position = mesh.getVertex(count);
-            if (usePerlin) 
-                position.z = (ofMap(ofSignedNoise(count, ofGetElapsedTimef()), -1, 1, 0, bass * 20));
-            else
-                position.z = (ofMap(ofNoise(count, ofGetElapsedTimef()), 0, 1, 0, bass * 20));
+            if (rangeDependent) {
+                alpha = 0.375;
+                float bassContrib = ofNoise(ofMap(x, 0, size * 3, 0, 5), ofMap(y, 0, size * 3, 0, 5), ofGetElapsedTimef()) * bass / 0.5;
+                float midsContrib = ofNoise(ofMap(x, 0, size * 3, 0, 12), ofMap(y, 0, size * 3, 0, 12), ofGetElapsedTimef()) * mids / 1.5;
+                float highsContrib = ofNoise(ofMap(x, 0, size * 3, 0, 30), ofMap(y, 0, size * 3, 0, 30), ofGetElapsedTimef()) * highs / 3.0;
+                position.z = (bassContrib + midsContrib + highsContrib) * 20;
+            }
+            else {
+                alpha = 0.3;
+                if (usePerlin)
+                    position.z = (ofMap(ofSignedNoise(count, ofGetElapsedTimef()), -1, 1, 0, bass * 30));
+                else
+                    position.z = (ofMap(ofNoise(count, ofGetElapsedTimef()), 0, 1, 0, bass * 30));
+            }
             //std::cout << position.z << std::endl;
             // ofColor SurfaceMesh::surfaceColorRadiant(ofVec3f position)
             mesh.setVertex(count, position);
@@ -67,7 +77,15 @@ void SurfaceMesh::draw() {
     if (rotateY)
         ofRotateY(ofSignedNoise(ofGetElapsedTimef() * 0.07) * 720.0);
 
-    mesh.drawWireframe();
+    if (wireframe) {
+        glPointSize(1);
+        mesh.drawWireframe();
+    }
+    else {
+        glPointSize(1.7);
+        mesh.drawVertices();
+    }
+    
     cam.end();
     ofPopMatrix();
     //gui.draw();
@@ -87,6 +105,8 @@ ofFloatColor SurfaceMesh::calculateColor(ofVec3f position) {
         width = ofMap(position.length(), 0, size * 3 * sqrt(2), 0.0f, 1.0f, true);
         surfaceColor.setHsb(ofWrap(width+frameNumMod, circleLower, circleUpper), 1.0f, 1.0f, alpha);
         break;
+    case ColorScheme::WHITE:
+        surfaceColor.set(1.f, 1.f, 1.f, alpha);
     }
 
     return surfaceColor;

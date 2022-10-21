@@ -12,7 +12,7 @@ void ParticleRiver::initParts()
 		vel[i][1] = ofRandom(-1, 1);
 		vel[i][2] = ofRandom(-1, 1);
 
-		col[i][0] = 0.7f;//ofRandom(0, 1);
+		col[i][0] = 0.9f;//ofRandom(0, 1);
 		col[i][1] = 0.1;//ofRandom(0, 1);
 		col[i][2] = 0.1;//ofRandom(0, 1);
 		col[i][3] = 0;//ofRandom(0, 1);
