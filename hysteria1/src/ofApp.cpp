@@ -230,6 +230,8 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("Do", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
+    paramsKinectPointCloud.add(kinectPointCloud.lowerThresh.set("LowerThresh", 0.0f, 0.0f, 10000.0f));
+    paramsKinectPointCloud.add(kinectPointCloud.upperThresh.set("UpperThresh", 3000.0f, 0.0f, 10000.0f));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
 
     // ParticleRiver

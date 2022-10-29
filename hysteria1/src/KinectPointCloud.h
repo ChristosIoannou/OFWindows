@@ -35,6 +35,8 @@ public:
 	bool usePlayMesh = false;
 	bool freezeKinectMesh = false;
 	float startOffsetAngle = 0.0f;
+	ofParameter<float> lowerThresh = 0.0f;
+	ofParameter<float> upperThresh= 3000.0f;
 
 	ofParameter<bool> b_remerge;
 	ofParameter<bool> b_explode;

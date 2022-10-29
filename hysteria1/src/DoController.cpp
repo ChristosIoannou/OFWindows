@@ -11,6 +11,9 @@ void DoController::setup() {
 }
 
 void DoController::audioSphereListener(bool& b_audioSphere) {
+	ofRotateX(0.0);
+	ofRotateY(0.0);
+	ofRotateZ(0.0);
 	if (b_audioSphere) {
 		b_particleRiver = false;
 		b_flashingText = false;

@@ -122,7 +122,7 @@ void KinectPointCloud::getFullFrame(int step, int shift) {
         int h = kinect.height;
         for (int y = 0; y < h; y += step) {
             for (int x = (0 + shift); x < w; x += step) {
-                if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
+                if (kinect.getDistanceAt(x, y) > lowerThresh && kinect.getDistanceAt(x, y) < upperThresh) {
                     kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
                 }
             }
