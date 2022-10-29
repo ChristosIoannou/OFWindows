@@ -124,8 +124,32 @@ void KinectPointCloud::getFullFrame(int step, int shift) {
             for (int x = (0 + shift); x < w; x += step) {
                 if (kinect.getDistanceAt(x, y) > lowerThresh && kinect.getDistanceAt(x, y) < upperThresh) {
                     kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                    kinectMesh.addColor(calculateColor(kinect.getDistanceAt(x, y)));
                 }
             }
         }
     }
+}
+
+ofFloatColor KinectPointCloud::calculateColor(float distance) {
+    ofFloatColor surfaceColor;
+    float frameNumMod = 1.0 - float((ofGetFrameNum() % (20))) / 20.0;
+    float width;
+
+    switch (colorScheme)
+    {
+    case KinectPointCloudColorScheme::RANDOM:
+        surfaceColor.setHsb(ofRandom(1), 1.f, 1.f, 1.f);
+    case KinectPointCloudColorScheme::Z:
+        surfaceColor.setHsb(ofMap(distance, 0, upperThresh, 0.f, 1.f, true), 1.0f, 1.0f, 0.8);
+        break;
+    //case KinectPointCloudColorScheme::CIRCLE:
+    //    width = ofMap(position.length(), 0, size * 3 * sqrt(2), 0.0f, 1.0f, true);
+    //    surfaceColor.setHsb(ofWrap(width + frameNumMod, circleLower, circleUpper), 1.0f, 1.0f, alpha);
+    //    break;
+    case KinectPointCloudColorScheme::WHITE:
+        surfaceColor.set(1.f, 1.f, 1.f, 0.9);
+    }
+
+    return surfaceColor;
 }

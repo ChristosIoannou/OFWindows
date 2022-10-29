@@ -232,6 +232,7 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
     paramsKinectPointCloud.add(kinectPointCloud.lowerThresh.set("LowerThresh", 0.0f, 0.0f, 10000.0f));
     paramsKinectPointCloud.add(kinectPointCloud.upperThresh.set("UpperThresh", 3000.0f, 0.0f, 10000.0f));
+    paramsKinectPointCloud.add(kinectPointCloud.colorScheme.set("ColorScheme", 0, 0, 2));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
 
     // ParticleRiver

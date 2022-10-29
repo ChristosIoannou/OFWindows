@@ -1,5 +1,12 @@
 #include "ofxKinect.h"
 
+enum KinectPointCloudColorScheme{
+	Z,
+	CIRCLE,
+	WHITE,
+	RANDOM
+};
+
 class KinectPointCloud {
 
 public:
@@ -21,6 +28,7 @@ public:
 	void explode();
 	void startExplode();
 	void remerge();
+	ofFloatColor calculateColor(float distance);
 
 	// Listeners
 	void remergeListener(bool& b_pcRemerge);
@@ -37,7 +45,7 @@ public:
 	float startOffsetAngle = 0.0f;
 	ofParameter<float> lowerThresh = 0.0f;
 	ofParameter<float> upperThresh= 3000.0f;
-
+	ofParameter<int> colorScheme;
 	ofParameter<bool> b_remerge;
 	ofParameter<bool> b_explode;
 	ofParameter<bool> b_float;
