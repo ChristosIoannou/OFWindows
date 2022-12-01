@@ -40,11 +40,14 @@ void KinectPointCloud::draw(ofEasyCam& cam) {
     ofTranslate(0, 0, -1000);
     ofEnableDepthTest();
 
-    if (usePlayMesh) {
-        playMesh.drawVertices();
-    }
-    else {
-        kinectMesh.drawVertices();
+    if (!b_flash || (b_flash && floor(ofRandom(flashPeriod)) == 0)) 
+    {
+        if (usePlayMesh) {
+            playMesh.drawVertices();
+        }
+        else {
+            kinectMesh.drawVertices();
+        }
     }
 
     ofDisableDepthTest();

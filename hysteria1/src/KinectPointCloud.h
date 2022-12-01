@@ -1,6 +1,7 @@
 #include "ofxKinect.h"
 
-enum KinectPointCloudColorScheme{
+enum KinectPointCloudColorScheme 
+{
 	DEPTH,
 	WHITE_POINTCLOUD,
 	RANDOM
@@ -48,5 +49,7 @@ public:
 	ofParameter<bool> b_remerge;
 	ofParameter<bool> b_explode;
 	ofParameter<bool> b_float;
+	ofParameter<bool> b_flash;
+	ofParameter<int> flashPeriod;
 
 };
