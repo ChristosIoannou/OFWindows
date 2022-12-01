@@ -114,19 +114,33 @@ void KinectPointCloud::getNewFrame() {
         kinectMesh.clear();
         int step = 1;
         int shift = 0;
-        getFullFrame(step, shift);
+        getFullFrame();
 
     }
 }
 
-void KinectPointCloud::getFullFrame(int step, int shift) {
+void KinectPointCloud::getFullFrame() {
     if (!freezeKinectMesh) {
         int w = kinect.width;
         int h = kinect.height;
+        int step = 1;
+        int shift = 0;
         for (int y = 0; y < h; y += step) {
             for (int x = (0 + shift); x < w; x += step) {
                 if (kinect.getDistanceAt(x, y) > lowerThresh && kinect.getDistanceAt(x, y) < upperThresh) {
-                    kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+
+                    if (b_wave)
+                    {
+                        ofVec3f alter;
+                        alter.x = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+                        alter.y = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+                        alter.z = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+
+                        kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y) + alter);
+                    }
+                    else {
+                        kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                    }
                     kinectMesh.addColor(calculateColor(kinect.getDistanceAt(x, y)));
                 }
             }

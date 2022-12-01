@@ -20,7 +20,7 @@ public:
 	void draw(ofEasyCam& cam);
 	void getNewFrame();
 
-	void getFullFrame(int step, int shift);
+	void getFullFrame();
 
 	void setKinectMesh(ofMesh mesh);
 	void setPlayMesh(ofMesh mesh);
@@ -51,5 +51,7 @@ public:
 	ofParameter<bool> b_float;
 	ofParameter<bool> b_flash;
 	ofParameter<int> flashPeriod;
-
+	ofParameter<bool> b_wave;
+	ofParameter<int> wave_amplitude;
+	ofParameter<float> wave_freq;
 };
