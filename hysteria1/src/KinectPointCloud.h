@@ -1,9 +1,8 @@
 #include "ofxKinect.h"
 
 enum KinectPointCloudColorScheme{
-	Z,
-	CIRCLE,
-	WHITE,
+	DEPTH,
+	WHITE_POINTCLOUD,
 	RANDOM
 };
 

@@ -140,15 +140,13 @@ ofFloatColor KinectPointCloud::calculateColor(float distance) {
     {
     case KinectPointCloudColorScheme::RANDOM:
         surfaceColor.setHsb(ofRandom(1), 1.f, 1.f, 1.f);
-    case KinectPointCloudColorScheme::Z:
+        break;
+    case KinectPointCloudColorScheme::DEPTH:
         surfaceColor.setHsb(ofMap(distance, 0, upperThresh, 0.f, 1.f, true), 1.0f, 1.0f, 0.8);
         break;
-    //case KinectPointCloudColorScheme::CIRCLE:
-    //    width = ofMap(position.length(), 0, size * 3 * sqrt(2), 0.0f, 1.0f, true);
-    //    surfaceColor.setHsb(ofWrap(width + frameNumMod, circleLower, circleUpper), 1.0f, 1.0f, alpha);
-    //    break;
-    case KinectPointCloudColorScheme::WHITE:
+    case KinectPointCloudColorScheme::WHITE_POINTCLOUD:
         surfaceColor.set(1.f, 1.f, 1.f, 0.9);
+        break;
     }
 
     return surfaceColor;
