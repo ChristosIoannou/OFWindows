@@ -14,7 +14,7 @@ int main( ){
 	settings.windowMode = OF_WINDOW;
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
-	settings.setSize(750, 750);
+	settings.setSize(750, 850);
 	settings.setPosition(glm::vec2(0, 300));
 	settings.resizable = true;
 	shared_ptr<ofAppBaseWindow> guiWindow = ofCreateWindow(settings);
