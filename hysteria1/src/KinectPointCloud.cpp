@@ -40,11 +40,14 @@ void KinectPointCloud::draw(ofEasyCam& cam) {
     ofTranslate(0, 0, -1000);
     ofEnableDepthTest();
 
-    if (usePlayMesh) {
-        playMesh.drawVertices();
-    }
-    else {
-        kinectMesh.drawVertices();
+    if (!b_flash || (b_flash && floor(ofRandom(flashPeriod)) == 0)) 
+    {
+        if (usePlayMesh) {
+            playMesh.drawVertices();
+        }
+        else {
+            kinectMesh.drawVertices();
+        }
     }
 
     ofDisableDepthTest();
@@ -111,21 +114,57 @@ void KinectPointCloud::getNewFrame() {
         kinectMesh.clear();
         int step = 1;
         int shift = 0;
-        getFullFrame(step, shift);
+        getFullFrame();
 
     }
 }
 
-void KinectPointCloud::getFullFrame(int step, int shift) {
+void KinectPointCloud::getFullFrame() {
     if (!freezeKinectMesh) {
         int w = kinect.width;
         int h = kinect.height;
+        int step = 1;
+        int shift = 0;
         for (int y = 0; y < h; y += step) {
             for (int x = (0 + shift); x < w; x += step) {
-                if (kinect.getDistanceAt(x, y) > 0 && kinect.getDistanceAt(x, y) < 1500) {
-                    kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                if (kinect.getDistanceAt(x, y) > lowerThresh && kinect.getDistanceAt(x, y) < upperThresh) {
+
+                    if (b_wave)
+                    {
+                        ofVec3f alter;
+                        alter.x = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+                        alter.y = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+                        alter.z = ofNoise(ofMap(x, 0, w, 0, 5), ofMap(y, 0, h, 0, 5), ofGetElapsedTimef() * wave_freq) * wave_amplitude;
+
+                        kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y) + alter);
+                    }
+                    else {
+                        kinectMesh.addVertex(kinect.getWorldCoordinateAt(x, y));
+                    }
+                    kinectMesh.addColor(calculateColor(kinect.getDistanceAt(x, y)));
                 }
             }
         }
     }
+}
+
+ofFloatColor KinectPointCloud::calculateColor(float distance) {
+    ofFloatColor surfaceColor;
+    float frameNumMod = 1.0 - float((ofGetFrameNum() % (20))) / 20.0;
+    float width;
+
+    switch (colorScheme)
+    {
+    case KinectPointCloudColorScheme::RANDOM:
+        surfaceColor.setHsb(ofRandom(1), 1.f, 1.f, 1.f);
+        break;
+    case KinectPointCloudColorScheme::DEPTH:
+        surfaceColor.setHsb(ofMap(distance, 0, upperThresh, 0.f, 1.f, true), 1.0f, 1.0f, 0.8);
+        break;
+    case KinectPointCloudColorScheme::WHITE_POINTCLOUD:
+        surfaceColor.set(1.f, 1.f, 1.f, 0.9);
+        break;
+    }
+
+    return surfaceColor;
 }

@@ -38,7 +38,7 @@ void Tunnel::resize() {
 
 void Tunnel::drawFbo() {
     ofSetRectMode(OF_RECTMODE_CENTER);
-    if (floor(ofRandom(20)) == 0) {
+    if (floor(ofRandom(spacing)) == 0) {
         tunnelColor.setHsb(ofRandom(255), 255, 255, 255);
         ofSetColor(tunnelColor);
     }

@@ -21,6 +21,7 @@ void ofApp::setup() {
     setupKinectContour();
     setupTunnel();
     setupSurfaceMesh();
+    setupVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -44,6 +45,8 @@ void ofApp::update() {
         updateTunnel();
     if (doController.b_surfaceMesh)
         updateSurfaceMesh();
+    if (doController.b_videoPlayer)
+        updateVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -63,6 +66,8 @@ void ofApp::draw() {
         drawTunnel();
     if (doController.b_surfaceMesh)
         drawSurfaceMesh();
+    if (doController.b_videoPlayer)
+        drawVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -230,6 +235,14 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(doController.b_kinectPointCloud.set("Do", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_explode.set("Explode", false));
     paramsKinectPointCloud.add(kinectPointCloud.b_remerge.set("Remerge", false));
+    paramsKinectPointCloud.add(kinectPointCloud.lowerThresh.set("LowerThresh", 0.0f, 0.0f, 10000.0f));
+    paramsKinectPointCloud.add(kinectPointCloud.upperThresh.set("UpperThresh", 3000.0f, 0.0f, 10000.0f));
+    paramsKinectPointCloud.add(kinectPointCloud.colorScheme.set("ColorScheme", 0, 0, 2));
+    paramsKinectPointCloud.add(kinectPointCloud.b_flash.set("Flash", false));
+    paramsKinectPointCloud.add(kinectPointCloud.flashPeriod.set("FlashPeriod", 10, 0, 20));
+    paramsKinectPointCloud.add(kinectPointCloud.b_wave.set("Wave", false));
+    paramsKinectPointCloud.add(kinectPointCloud.wave_amplitude.set("Wave Amplitude", 50, 0, 100));
+    paramsKinectPointCloud.add(kinectPointCloud.wave_freq.set("Wave Frequency", 2, 0.0, 5.5));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
 
     // ParticleRiver
@@ -272,6 +285,14 @@ void ofApp::setupGui() {
     paramsSurfaceMesh.add(surfaceMesh.zoom.set("Zoom", false));
     paramsSurfaceMesh.add(surfaceMesh.wireframe.set("Wireframe", true));
     panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 490, 465);
+
+    // VideoPlayer
+    paramsVideoPlayer.setName("VideoPlayer");
+    paramsVideoPlayer.add(doController.b_videoPlayer.set("Do", false));
+    //paramsVideoPlayer.add(videoPlayer.bikeVid.set("BikeCam", false));
+    //paramsVideoPlayer.add(videoPlayer.papaSpeaksJapanese.set("PapaSpeaksJap", false));
+    paramsVideoPlayer.add(videoPlayer.vidChoice.set("Video", 0, 0, 2));
+    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 580);
 
     ofSetBackgroundColor(0);
 }
@@ -372,6 +393,10 @@ void ofApp::setupSurfaceMesh() {
     surfaceMesh.setup();
 }
 
+void ofApp::setupVideoPlayer() {
+    videoPlayer.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -446,6 +471,10 @@ void ofApp::updateSurfaceMesh() {
     surfaceMesh.update(bass, mids, highs);
 }
 
+void ofApp::updateVideoPlayer() {
+    videoPlayer.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -460,6 +489,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelKinectContour.draw();
     panelTunnel.draw();
     panelSurfaceMesh.draw();
+    panelVideoPlayer.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -604,6 +634,10 @@ void ofApp::drawTunnel() {
 
 void ofApp::drawSurfaceMesh() {
     surfaceMesh.draw();
+}
+
+void ofApp::drawVideoPlayer() {
+    videoPlayer.draw();
 }
 
 //==================== HELPERS =================================
