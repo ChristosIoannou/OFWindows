@@ -21,6 +21,7 @@ void ofApp::setup() {
     setupKinectContour();
     setupTunnel();
     setupSurfaceMesh();
+    setupVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -44,6 +45,8 @@ void ofApp::update() {
         updateTunnel();
     if (doController.b_surfaceMesh)
         updateSurfaceMesh();
+    if (doController.b_videoPlayer)
+        updateVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -63,6 +66,8 @@ void ofApp::draw() {
         drawTunnel();
     if (doController.b_surfaceMesh)
         drawSurfaceMesh();
+    if (doController.b_videoPlayer)
+        drawVideoPlayer();
 }
 
 //--------------------------------------------------------------
@@ -281,6 +286,14 @@ void ofApp::setupGui() {
     paramsSurfaceMesh.add(surfaceMesh.wireframe.set("Wireframe", true));
     panelSurfaceMesh.setup(paramsSurfaceMesh, "settings.xml", 490, 465);
 
+    // VideoPlayer
+    paramsVideoPlayer.setName("VideoPlayer");
+    paramsVideoPlayer.add(doController.b_videoPlayer.set("Do", false));
+    //paramsVideoPlayer.add(videoPlayer.bikeVid.set("BikeCam", false));
+    //paramsVideoPlayer.add(videoPlayer.papaSpeaksJapanese.set("PapaSpeaksJap", false));
+    paramsVideoPlayer.add(videoPlayer.vidChoice.set("Video", 0, 0, 2));
+    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 580);
+
     ofSetBackgroundColor(0);
 }
 
@@ -380,6 +393,10 @@ void ofApp::setupSurfaceMesh() {
     surfaceMesh.setup();
 }
 
+void ofApp::setupVideoPlayer() {
+    videoPlayer.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -454,6 +471,10 @@ void ofApp::updateSurfaceMesh() {
     surfaceMesh.update(bass, mids, highs);
 }
 
+void ofApp::updateVideoPlayer() {
+    videoPlayer.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -468,6 +489,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelKinectContour.draw();
     panelTunnel.draw();
     panelSurfaceMesh.draw();
+    panelVideoPlayer.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -612,6 +634,10 @@ void ofApp::drawTunnel() {
 
 void ofApp::drawSurfaceMesh() {
     surfaceMesh.draw();
+}
+
+void ofApp::drawVideoPlayer() {
+    videoPlayer.draw();
 }
 
 //==================== HELPERS =================================

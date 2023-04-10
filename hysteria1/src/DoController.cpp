@@ -8,6 +8,7 @@ void DoController::setup() {
 	b_kinectPointCloud.addListener(this, &DoController::kinectPointCloudListener);
 	b_tunnel.addListener(this, &DoController::tunnelListener);
 	b_surfaceMesh.addListener(this, &DoController::surfaceMeshListener);
+	b_videoPlayer.addListener(this, &DoController::videoPlayerListener);
 }
 
 void DoController::audioSphereListener(bool& b_audioSphere) {
@@ -22,6 +23,7 @@ void DoController::audioSphereListener(bool& b_audioSphere) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -34,6 +36,7 @@ void DoController::particleRiverListener(bool& b_particleRiver) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -46,6 +49,7 @@ void DoController::flashingTextListener(bool& b_flashingText) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -59,6 +63,7 @@ void DoController::kinectContourListener(bool& b_kinectContour) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -72,6 +77,7 @@ void DoController::kinectPointCloudListener(bool& b_kinectPointCloud) {
 		b_kinect = true;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -84,6 +90,7 @@ void DoController::tunnelListener(bool& b_tunnel) {
 		b_kinect = false;
 		b_kinectPointCloud = false;
 		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
 
@@ -96,5 +103,19 @@ void DoController::surfaceMeshListener(bool& b_surfaceMesh) {
 		b_kinect = false;
 		b_kinectPointCloud = false;
 		b_tunnel = false;
+		b_videoPlayer = false;
+	}
+}
+
+void DoController::videoPlayerListener(bool& b_videoPlayer) {
+	if (b_videoPlayer) {
+		b_audioSphere = false;
+		b_particleRiver = false;
+		b_flashingText = false;
+		b_kinectContour = false;
+		b_kinect = false;
+		b_kinectPointCloud = false;
+		b_tunnel = false;
+		b_surfaceMesh = false;
 	}
 }

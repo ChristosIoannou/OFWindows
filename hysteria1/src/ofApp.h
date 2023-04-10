@@ -12,6 +12,7 @@
 #include "Tunnel.h"
 #include "DoController.h"
 #include "SurfaceMesh.h"
+#include "VideoPlayer.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -44,6 +45,7 @@ public:
     void setupKinectContour();
     void setupTunnel();
     void setupSurfaceMesh();
+    void setupVideoPlayer();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -56,6 +58,7 @@ public:
     void updateKinectContour();
     void updateTunnel();
     void updateSurfaceMesh();
+    void updateVideoPlayer();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -67,6 +70,7 @@ public:
     void drawKinectContour();
     void drawTunnel();
     void drawSurfaceMesh();
+    void drawVideoPlayer();
 
     //--- DoController ---
     DoController doController;
@@ -160,6 +164,11 @@ public:
     SurfaceMesh surfaceMesh = SurfaceMesh(cam);
     ofParameterGroup paramsSurfaceMesh;
     ofxPanel panelSurfaceMesh;
+
+    //--- VideoPlayer ---
+    VideoPlayer videoPlayer;
+    ofParameterGroup paramsVideoPlayer;
+    ofxPanel panelVideoPlayer;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
