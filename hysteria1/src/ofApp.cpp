@@ -22,6 +22,7 @@ void ofApp::setup() {
     setupTunnel();
     setupSurfaceMesh();
     setupVideoPlayer();
+    setupParabolicCurve();
 }
 
 //--------------------------------------------------------------
@@ -47,6 +48,8 @@ void ofApp::update() {
         updateSurfaceMesh();
     if (doController.b_videoPlayer)
         updateVideoPlayer();
+    if (doController.b_parabolicCurve)
+        updateParabolicCurve();
 }
 
 //--------------------------------------------------------------
@@ -68,6 +71,8 @@ void ofApp::draw() {
         drawSurfaceMesh();
     if (doController.b_videoPlayer)
         drawVideoPlayer();
+    if (doController.b_parabolicCurve)
+        drawParabolicCurve();
 }
 
 //--------------------------------------------------------------
@@ -289,10 +294,12 @@ void ofApp::setupGui() {
     // VideoPlayer
     paramsVideoPlayer.setName("VideoPlayer");
     paramsVideoPlayer.add(doController.b_videoPlayer.set("Do", false));
-    //paramsVideoPlayer.add(videoPlayer.bikeVid.set("BikeCam", false));
-    //paramsVideoPlayer.add(videoPlayer.papaSpeaksJapanese.set("PapaSpeaksJap", false));
     paramsVideoPlayer.add(videoPlayer.vidChoice.set("Video", 0, 0, 2));
-    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 580);
+    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 500);
+
+    // ParabolicCurve
+    paramsParabolicCurve.add(doController.b_parabolicCurve.set("Do", false));
+    panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
 
     ofSetBackgroundColor(0);
 }
@@ -397,6 +404,10 @@ void ofApp::setupVideoPlayer() {
     videoPlayer.setup();
 }
 
+void ofApp::setupParabolicCurve() {
+    parabolicCurve.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -475,6 +486,10 @@ void ofApp::updateVideoPlayer() {
     videoPlayer.update();
 }
 
+void ofApp::updateParabolicCurve() {
+    parabolicCurve.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -490,6 +505,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelTunnel.draw();
     panelSurfaceMesh.draw();
     panelVideoPlayer.draw();
+    panelParabolicCurve.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -638,6 +654,10 @@ void ofApp::drawSurfaceMesh() {
 
 void ofApp::drawVideoPlayer() {
     videoPlayer.draw();
+}
+
+void ofApp::drawParabolicCurve() {
+    parabolicCurve.draw();
 }
 
 //==================== HELPERS =================================

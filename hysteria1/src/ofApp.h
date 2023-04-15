@@ -13,6 +13,7 @@
 #include "DoController.h"
 #include "SurfaceMesh.h"
 #include "VideoPlayer.h"
+#include "ParabolicCurve.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -46,6 +47,7 @@ public:
     void setupTunnel();
     void setupSurfaceMesh();
     void setupVideoPlayer();
+    void setupParabolicCurve();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -59,6 +61,7 @@ public:
     void updateTunnel();
     void updateSurfaceMesh();
     void updateVideoPlayer();
+    void updateParabolicCurve();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -71,6 +74,7 @@ public:
     void drawTunnel();
     void drawSurfaceMesh();
     void drawVideoPlayer();
+    void drawParabolicCurve();
 
     //--- DoController ---
     DoController doController;
@@ -169,6 +173,11 @@ public:
     VideoPlayer videoPlayer;
     ofParameterGroup paramsVideoPlayer;
     ofxPanel panelVideoPlayer;
+
+    //--- ParabolicCurve ---
+    ParabolicCurve parabolicCurve;
+    ofParameterGroup paramsParabolicCurve;
+    ofxPanel panelParabolicCurve;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
