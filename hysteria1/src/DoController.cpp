@@ -9,6 +9,7 @@ void DoController::setup() {
 	b_tunnel.addListener(this, &DoController::tunnelListener);
 	b_surfaceMesh.addListener(this, &DoController::surfaceMeshListener);
 	b_videoPlayer.addListener(this, &DoController::videoPlayerListener);
+	b_parabolicCurve.addListener(this, &DoController::parabolicCurveListener);
 }
 
 void DoController::audioSphereListener(bool& b_audioSphere) {
@@ -24,6 +25,7 @@ void DoController::audioSphereListener(bool& b_audioSphere) {
 		b_tunnel = false;
 		b_surfaceMesh = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -50,6 +52,7 @@ void DoController::flashingTextListener(bool& b_flashingText) {
 		b_tunnel = false;
 		b_surfaceMesh = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -64,6 +67,7 @@ void DoController::kinectContourListener(bool& b_kinectContour) {
 		b_tunnel = false;
 		b_surfaceMesh = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -78,6 +82,7 @@ void DoController::kinectPointCloudListener(bool& b_kinectPointCloud) {
 		b_tunnel = false;
 		b_surfaceMesh = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -91,6 +96,7 @@ void DoController::tunnelListener(bool& b_tunnel) {
 		b_kinectPointCloud = false;
 		b_surfaceMesh = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -104,6 +110,7 @@ void DoController::surfaceMeshListener(bool& b_surfaceMesh) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_videoPlayer = false;
+		b_parabolicCurve = false;
 	}
 }
 
@@ -117,5 +124,20 @@ void DoController::videoPlayerListener(bool& b_videoPlayer) {
 		b_kinectPointCloud = false;
 		b_tunnel = false;
 		b_surfaceMesh = false;
+		b_parabolicCurve = false;
+	}
+}
+
+void DoController::parabolicCurveListener(bool& b_parabolicCurve) {
+	if (b_parabolicCurve) {
+		b_audioSphere = false;
+		b_particleRiver = false;
+		b_flashingText = false;
+		b_kinectContour = false;
+		b_kinect = false;
+		b_kinectPointCloud = false;
+		b_tunnel = false;
+		b_surfaceMesh = false;
+		b_videoPlayer = false;
 	}
 }
