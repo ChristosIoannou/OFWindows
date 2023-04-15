@@ -94,6 +94,8 @@ void ofApp::keyPressed(int key) {
             particleRiver.resize();
         if (doController.b_tunnel)
             tunnel.resize();
+        if (doController.b_parabolicCurve)
+            parabolicCurve.resize();
         break;
     case OF_KEY_UP:
         angle++;
@@ -298,7 +300,10 @@ void ofApp::setupGui() {
     panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 500);
 
     // ParabolicCurve
+    paramsParabolicCurve.setName("ParabolicCurve");
     paramsParabolicCurve.add(doController.b_parabolicCurve.set("Do", false));
+    paramsParabolicCurve.add(parabolicCurve.regenerate.set("Regenerate", false));
+    paramsParabolicCurve.add(parabolicCurve.spacing.set("Spacing", 15, 0, 20));
     panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
 
     ofSetBackgroundColor(0);
