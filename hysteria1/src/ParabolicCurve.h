@@ -8,6 +8,12 @@ class Axes
 {
 public:
 
+    enum class LinesMode
+    {
+        LINES,
+        CROSSHATCH
+    };
+
 	Axes()
 	{
         regenerateAxes(6, 20);
@@ -17,6 +23,7 @@ public:
     ofPolyline yaxis;
     ofPoint intersection;
     std::vector<ofPolyline> lines;
+    std::vector<std::vector<ofPolyline>> crosshatch;
 
     void regenerateAxes(int proportion, int numPoints)
     {
@@ -25,16 +32,28 @@ public:
         xaxis = equallySpacedPoints(axes[0], axes[1], numPoints);
         yaxis = equallySpacedPoints(axes[2], axes[3], numPoints);
         intersection = axes[4];
-        lines = fillLines(numPoints);
+        lines = fillLines(xaxis, yaxis, numPoints);
+        crosshatch = createCrosshatch(axes, numPoints);
     }
 
-    void draw()
+    void draw(LinesMode mode)
     {
         xaxis.draw();
         yaxis.draw();
 
-        for (const auto l : lines)
-            l.draw();
+        switch (mode)
+        {
+        case LinesMode::LINES:
+            for (const auto l : lines)
+                l.draw();
+            break;
+        case LinesMode::CROSSHATCH:
+            for (const auto s : crosshatch)
+                for (const auto l : s)
+                    l.draw();
+            break;
+        }
+        
     }
 
 private:
@@ -96,17 +115,44 @@ private:
 		return line;
 	}
 
-    std::vector<ofPolyline> fillLines(int numPoints)
+    std::vector<ofPolyline> fillLines(ofPolyline line1, ofPolyline line2, int numPoints)
     {
         std::vector<ofPolyline> ls;
-        for (int i = 0; i < xaxis.getVertices().size(); ++i)
+        for (int i = 0; i < line1.getVertices().size(); ++i)
         {
             ofPolyline pl;
-            pl.addVertex(xaxis.getVertices()[i]);
-            pl.addVertex(yaxis.getVertices()[numPoints - i]);
+            pl.addVertex(line1.getVertices()[i]);
+            pl.addVertex(line2.getVertices()[numPoints - i]);
             ls.push_back(pl);
         }
         return ls;
+    }
+
+    std::vector<std::vector<ofPolyline>> createCrosshatch(std::vector<ofPoint> axes, int numPoints)
+    {
+        bool parity = ofRandom(1.0) <= 0.5;
+
+        ofPolyline x1, x2, y1, y2;
+
+        x1 = equallySpacedPoints(axes[0], axes[4], numPoints);
+        x2 = equallySpacedPoints(axes[4], axes[1], numPoints);
+
+        if (parity)
+        {
+            y1 = equallySpacedPoints(axes[2], axes[4], numPoints);
+            y2 = equallySpacedPoints(axes[4], axes[3], numPoints);
+        }
+        else 
+        {
+            y1 = equallySpacedPoints(axes[3], axes[4], numPoints);
+            y2 = equallySpacedPoints(axes[4], axes[2], numPoints);
+        }
+    
+        std::vector<std::vector<ofPolyline>> ch;
+        ch.emplace_back(fillLines(x1, y1, numPoints));
+        ch.emplace_back(fillLines(x2, y2, numPoints));
+
+        return ch;
     }
 };
 
@@ -122,10 +168,12 @@ public:
     void resize();
 
     ofFbo fbo;
-    ofColor tunnelColor;
+    ofColor bezierColor;
 
     ofPoint getLineIntersection(Axes axes);
     
+    ofParameter<int> linesMode;
+    ofParameter<bool> flash;
     ofParameter<bool> regenerate;
     ofParameter<int> spacing;
 

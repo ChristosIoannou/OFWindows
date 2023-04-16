@@ -21,27 +21,38 @@ void ParabolicCurve::update()
 
     if (regenerate)
     {
-        axes.regenerateAxes(10, numPoints);
+        axes.regenerateAxes(6, ofRandom(5, 40));
         regenerate = false;
     }
 
+    if (flash)
+    {
+        fbo.begin();
+        ofFill();
+        ofSetColor(0, 0, 0, 25);
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        drawFbo();
+        fbo.end();
+    }
     
-    
-    fbo.begin();
-    ofFill();
-    ofSetColor(0, 0, 0, 25);
-    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    drawFbo();
-    fbo.end();
+
 }
 
 //--------------------------------------------------------
 void ParabolicCurve::draw()
 {
-
-    ofDisableDepthTest();
-    ofSetColor(tunnelColor);
-    fbo.draw(0, 0);
+    if (flash)
+    {
+        ofDisableDepthTest();
+        ofSetColor(bezierColor);
+        fbo.draw(0, 0);
+    }
+    else {
+        ofPushMatrix();
+        ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);  // Translate to the center of the screen
+        axes.draw((Axes::LinesMode)linesMode.get());
+        ofPopMatrix();
+    }
 
 }
 
@@ -49,14 +60,14 @@ void ParabolicCurve::draw()
 void ParabolicCurve::drawFbo() {
 
     if (floor(ofRandom(spacing)) == 0) {
-        tunnelColor.setHsb(ofRandom(255), 255, 255, 255);
-        ofSetColor(tunnelColor);
+        bezierColor.setHsb(ofRandom(255), 255, 255, 255);
+        ofSetColor(bezierColor);
         axes.regenerateAxes(6, ofRandom(10, 30));
     }
     ofNoFill();
     ofPushMatrix();
     ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2, 100);  // Translate to the center of the screen
-    axes.draw();
+    axes.draw((Axes::LinesMode)linesMode.get());
     ofPopMatrix();
     ofSetRectMode(OF_RECTMODE_CORNER);
 

@@ -303,7 +303,9 @@ void ofApp::setupGui() {
     paramsParabolicCurve.setName("ParabolicCurve");
     paramsParabolicCurve.add(doController.b_parabolicCurve.set("Do", false));
     paramsParabolicCurve.add(parabolicCurve.regenerate.set("Regenerate", false));
+    paramsParabolicCurve.add(parabolicCurve.flash.set("Flash", false));
     paramsParabolicCurve.add(parabolicCurve.spacing.set("Spacing", 15, 0, 20));
+    paramsParabolicCurve.add(parabolicCurve.linesMode.set("Lines Mode", 0, 0, 1));
     panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
 
     ofSetBackgroundColor(0);
