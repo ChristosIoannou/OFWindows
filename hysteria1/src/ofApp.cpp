@@ -248,6 +248,7 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(kinectPointCloud.b_flash.set("Flash", false));
     paramsKinectPointCloud.add(kinectPointCloud.flashPeriod.set("FlashPeriod", 10, 0, 20));
     paramsKinectPointCloud.add(kinectPointCloud.b_wave.set("Wave", false));
+    paramsKinectPointCloud.add(kinectPointCloud.wave_amp_sin.set("WaveAmp Sin", 0.0, 0.0, 0.1));
     paramsKinectPointCloud.add(kinectPointCloud.wave_amplitude.set("Wave Amplitude", 50, 0, 100));
     paramsKinectPointCloud.add(kinectPointCloud.wave_freq.set("Wave Frequency", 2, 0.0, 5.5));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
@@ -305,7 +306,8 @@ void ofApp::setupGui() {
     paramsParabolicCurve.add(parabolicCurve.regenerate.set("Regenerate", false));
     paramsParabolicCurve.add(parabolicCurve.flash.set("Flash", false));
     paramsParabolicCurve.add(parabolicCurve.spacing.set("Spacing", 15, 0, 20));
-    paramsParabolicCurve.add(parabolicCurve.linesMode.set("Lines Mode", 0, 0, 1));
+    paramsParabolicCurve.add(parabolicCurve.linesMode.set("Lines Mode", 0, 0, 2));
+    paramsParabolicCurve.add(parabolicCurve.playMode.set("Play Mode", 0, 0, 1));
     panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
 
     ofSetBackgroundColor(0);

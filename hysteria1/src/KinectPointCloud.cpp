@@ -28,6 +28,10 @@ void KinectPointCloud::update() {
         freezeKinectMesh = false;
     }
 
+    if (wave_amp_sin != 0.0)
+    {
+        wave_amplitude = 100 * sin(ofGetFrameNum() * wave_amp_sin);
+    }
 }
 
 void KinectPointCloud::draw(ofEasyCam& cam) {

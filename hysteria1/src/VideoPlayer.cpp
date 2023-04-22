@@ -11,11 +11,13 @@ void VideoPlayer::setup()
     bikeVideo.load("videos/Victoria.mov");
     bikeVideo.setLoopState(OF_LOOP_NORMAL);
     bikeVideo.setSpeed(1.0);
+    bikeVideo.setVolume(0.0);
     bikeVideo.play();
 
     papaVideo.load("videos/PapaSpeaksJapanese.MOV");
     papaVideo.setLoopState(OF_LOOP_NORMAL);
     papaVideo.setSpeed(1.0);
+    papaVideo.setVolume(0.0);
     papaVideo.play();
 }
 

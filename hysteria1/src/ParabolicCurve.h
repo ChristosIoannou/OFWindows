@@ -10,8 +10,9 @@ public:
 
     enum class LinesMode
     {
+        AXES_ONLY,
         LINES,
-        CROSSHATCH
+        CROSSHATCH,
     };
 
 	Axes()
@@ -36,22 +37,28 @@ public:
         crosshatch = createCrosshatch(axes, numPoints);
     }
 
-    void draw(LinesMode mode)
+    void drawAll(int mode)
     {
         xaxis.draw();
         yaxis.draw();
 
-        switch (mode)
+        switch ((LinesMode)mode)
         {
+        case LinesMode::AXES_ONLY:
+            break;
+
         case LinesMode::LINES:
             for (const auto l : lines)
                 l.draw();
             break;
+
         case LinesMode::CROSSHATCH:
             for (const auto s : crosshatch)
                 for (const auto l : s)
                     l.draw();
             break;
+
+
         }
         
     }
@@ -159,24 +166,37 @@ private:
 class ParabolicCurve {
 
 public:
+    
+    enum class PlayMode
+    {
+        FLASH,
+        BUILD
+    };
+
 	ParabolicCurve() {}
 
 	void setup();
 	void update();
 	void draw();
-    void drawFbo();
+    void drawFboFlash();
+    void drawFboBuild(int numPoints);
     void resize();
+
 
     ofFbo fbo;
     ofColor bezierColor;
 
+    void regenerateListener(bool& regenerate);
+    void playModeListener(int& playMode);
     ofPoint getLineIntersection(Axes axes);
-    
+
+    ofParameter<int> playMode;
     ofParameter<int> linesMode;
     ofParameter<bool> flash;
     ofParameter<bool> regenerate;
     ofParameter<int> spacing;
 
     Axes axes;
-
+    float startTime;
+    int index;
 };
