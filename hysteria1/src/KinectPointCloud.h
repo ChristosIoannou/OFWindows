@@ -52,6 +52,7 @@ public:
 	ofParameter<bool> b_flash;
 	ofParameter<int> flashPeriod;
 	ofParameter<bool> b_wave;
+	ofParameter <float> wave_amp_sin;
 	ofParameter<int> wave_amplitude;
 	ofParameter<float> wave_freq;
 };

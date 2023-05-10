@@ -22,6 +22,8 @@ void ofApp::setup() {
     setupTunnel();
     setupSurfaceMesh();
     setupVideoPlayer();
+    setupParabolicCurve();
+    setupKinectDraw();
 }
 
 //--------------------------------------------------------------
@@ -47,6 +49,10 @@ void ofApp::update() {
         updateSurfaceMesh();
     if (doController.b_videoPlayer)
         updateVideoPlayer();
+    if (doController.b_parabolicCurve)
+        updateParabolicCurve();
+    if (doController.b_kinectDraw)
+        updateKinectDraw();
 }
 
 //--------------------------------------------------------------
@@ -68,8 +74,11 @@ void ofApp::draw() {
         drawSurfaceMesh();
     if (doController.b_videoPlayer)
         drawVideoPlayer();
+    if (doController.b_parabolicCurve)
+        drawParabolicCurve();
+    if (doController.b_kinectDraw)
+        drawKinectDraw();
 }
-
 //--------------------------------------------------------------
 void ofApp::exit() {
     soundStream.close();
@@ -89,6 +98,8 @@ void ofApp::keyPressed(int key) {
             particleRiver.resize();
         if (doController.b_tunnel)
             tunnel.resize();
+        if (doController.b_parabolicCurve)
+            parabolicCurve.resize();
         break;
     case OF_KEY_UP:
         angle++;
@@ -241,6 +252,7 @@ void ofApp::setupGui() {
     paramsKinectPointCloud.add(kinectPointCloud.b_flash.set("Flash", false));
     paramsKinectPointCloud.add(kinectPointCloud.flashPeriod.set("FlashPeriod", 10, 0, 20));
     paramsKinectPointCloud.add(kinectPointCloud.b_wave.set("Wave", false));
+    paramsKinectPointCloud.add(kinectPointCloud.wave_amp_sin.set("WaveAmp Sin", 0.0, 0.0, 0.1));
     paramsKinectPointCloud.add(kinectPointCloud.wave_amplitude.set("Wave Amplitude", 50, 0, 100));
     paramsKinectPointCloud.add(kinectPointCloud.wave_freq.set("Wave Frequency", 2, 0.0, 5.5));
     panelKinectPointCloud.setup(paramsKinectPointCloud, "settings.xml", 30, 490);
@@ -289,10 +301,26 @@ void ofApp::setupGui() {
     // VideoPlayer
     paramsVideoPlayer.setName("VideoPlayer");
     paramsVideoPlayer.add(doController.b_videoPlayer.set("Do", false));
-    //paramsVideoPlayer.add(videoPlayer.bikeVid.set("BikeCam", false));
-    //paramsVideoPlayer.add(videoPlayer.papaSpeaksJapanese.set("PapaSpeaksJap", false));
     paramsVideoPlayer.add(videoPlayer.vidChoice.set("Video", 0, 0, 2));
-    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 580);
+    panelVideoPlayer.setup(paramsVideoPlayer, "settings.xml", 260, 500);
+
+    // ParabolicCurve
+    paramsParabolicCurve.setName("ParabolicCurve");
+    paramsParabolicCurve.add(doController.b_parabolicCurve.set("Do", false));
+    paramsParabolicCurve.add(parabolicCurve.regenerate.set("Regenerate", false));
+    paramsParabolicCurve.add(parabolicCurve.flash.set("Flash", false));
+    paramsParabolicCurve.add(parabolicCurve.spacing.set("Spacing", 15, 0, 20));
+    paramsParabolicCurve.add(parabolicCurve.linesMode.set("Lines Mode", 0, 0, 2));
+    paramsParabolicCurve.add(parabolicCurve.playMode.set("Play Mode", 0, 0, 1));
+    panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
+
+    // KinectDraw
+    paramsKinectDraw.setName("KinectDraw");
+    paramsKinectDraw.add(doController.b_kinectDraw.set("Do", false));
+    paramsKinectDraw.add(kinectDraw.nearThreshold.set("Threshold", 230, 0, 255));
+    paramsKinectDraw.add(kinectDraw.maxAge.set("Max Age", 5.0, 0.1, 10.0));
+    paramsKinectDraw.add(kinectDraw.flipHue.set("Flip Hue", false));
+    panelKinectDraw.setup(paramsKinectDraw, "settings.xml", 260, 800);
 
     ofSetBackgroundColor(0);
 }
@@ -397,6 +425,14 @@ void ofApp::setupVideoPlayer() {
     videoPlayer.setup();
 }
 
+void ofApp::setupParabolicCurve() {
+    parabolicCurve.setup();
+}
+
+void ofApp::setupKinectDraw() {
+    kinectDraw.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -475,6 +511,14 @@ void ofApp::updateVideoPlayer() {
     videoPlayer.update();
 }
 
+void ofApp::updateParabolicCurve() {
+    parabolicCurve.update();
+}
+
+void ofApp::updateKinectDraw() {
+    kinectDraw.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -490,6 +534,8 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelTunnel.draw();
     panelSurfaceMesh.draw();
     panelVideoPlayer.draw();
+    panelParabolicCurve.draw();
+    panelKinectDraw.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -638,6 +684,14 @@ void ofApp::drawSurfaceMesh() {
 
 void ofApp::drawVideoPlayer() {
     videoPlayer.draw();
+}
+
+void ofApp::drawParabolicCurve() {
+    parabolicCurve.draw();
+}
+
+void ofApp::drawKinectDraw() {
+    kinectDraw.draw();
 }
 
 //==================== HELPERS =================================
