@@ -23,6 +23,7 @@ void ofApp::setup() {
     setupSurfaceMesh();
     setupVideoPlayer();
     setupParabolicCurve();
+    setupKinectDraw();
 }
 
 //--------------------------------------------------------------
@@ -50,6 +51,8 @@ void ofApp::update() {
         updateVideoPlayer();
     if (doController.b_parabolicCurve)
         updateParabolicCurve();
+    if (doController.b_kinectDraw)
+        updateKinectDraw();
 }
 
 //--------------------------------------------------------------
@@ -73,8 +76,9 @@ void ofApp::draw() {
         drawVideoPlayer();
     if (doController.b_parabolicCurve)
         drawParabolicCurve();
+    if (doController.b_kinectDraw)
+        drawKinectDraw();
 }
-
 //--------------------------------------------------------------
 void ofApp::exit() {
     soundStream.close();
@@ -310,6 +314,14 @@ void ofApp::setupGui() {
     paramsParabolicCurve.add(parabolicCurve.playMode.set("Play Mode", 0, 0, 1));
     panelParabolicCurve.setup(paramsParabolicCurve, "settings.xml", 260, 600);
 
+    // KinectDraw
+    paramsKinectDraw.setName("KinectDraw");
+    paramsKinectDraw.add(doController.b_kinectDraw.set("Do", false));
+    paramsKinectDraw.add(kinectDraw.nearThreshold.set("Threshold", 230, 0, 255));
+    paramsKinectDraw.add(kinectDraw.maxAge.set("Max Age", 5.0, 0.1, 10.0));
+    paramsKinectDraw.add(kinectDraw.flipHue.set("Flip Hue", false));
+    panelKinectDraw.setup(paramsKinectDraw, "settings.xml", 260, 800);
+
     ofSetBackgroundColor(0);
 }
 
@@ -417,6 +429,10 @@ void ofApp::setupParabolicCurve() {
     parabolicCurve.setup();
 }
 
+void ofApp::setupKinectDraw() {
+    kinectDraw.setup();
+}
+
 //==================== UPDATES =================================
 //--------------------------------------------------------------
 void ofApp::updateFFTandAnalyse() {
@@ -499,6 +515,10 @@ void ofApp::updateParabolicCurve() {
     parabolicCurve.update();
 }
 
+void ofApp::updateKinectDraw() {
+    kinectDraw.update();
+}
+
 //======================= DRAW =================================
 //--------------------------------------------------------------
 void ofApp::drawGui(ofEventArgs& args) {
@@ -515,6 +535,7 @@ void ofApp::drawGui(ofEventArgs& args) {
     panelSurfaceMesh.draw();
     panelVideoPlayer.draw();
     panelParabolicCurve.draw();
+    panelKinectDraw.draw();
 
     // draw fft spectrum
     if (drawSpectrum) {
@@ -667,6 +688,10 @@ void ofApp::drawVideoPlayer() {
 
 void ofApp::drawParabolicCurve() {
     parabolicCurve.draw();
+}
+
+void ofApp::drawKinectDraw() {
+    kinectDraw.draw();
 }
 
 //==================== HELPERS =================================

@@ -14,6 +14,7 @@
 #include "SurfaceMesh.h"
 #include "VideoPlayer.h"
 #include "ParabolicCurve.h"
+#include "KinectDraw.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -48,6 +49,7 @@ public:
     void setupSurfaceMesh();
     void setupVideoPlayer();
     void setupParabolicCurve();
+    void setupKinectDraw();
 
     //--- update ---
     void updateFFTandAnalyse();
@@ -62,6 +64,7 @@ public:
     void updateSurfaceMesh();
     void updateVideoPlayer();
     void updateParabolicCurve();
+    void updateKinectDraw();
 
     //--- draw ---
     void drawGui(ofEventArgs& args);
@@ -75,6 +78,7 @@ public:
     void drawSurfaceMesh();
     void drawVideoPlayer();
     void drawParabolicCurve();
+    void drawKinectDraw();
 
     //--- DoController ---
     DoController doController;
@@ -178,6 +182,11 @@ public:
     ParabolicCurve parabolicCurve;
     ofParameterGroup paramsParabolicCurve;
     ofxPanel panelParabolicCurve;
+
+    //--- KinectDraw ---
+    KinectDraw kinectDraw = KinectDraw(kinect);
+    ofParameterGroup paramsKinectDraw;
+    ofxPanel panelKinectDraw;
 
     //--- GUI ---
     ofParameterGroup paramsSpectra;
